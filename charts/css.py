@@ -34,21 +34,16 @@ class LegendLine(Legend):
 
 
 def _chart(
-    datasets,  # A dict of {"primary axis 1": [item0, item1, ...], ...}
-               # Each item is a decimal or a dict {"text": "...", "size": 0.5, "label": "...", "color": "orange", "tooltip": "..."}
-    _type: str,  # One of the supported types. Currently one of "column", "bar", "area", "line".
+    rows: list,
+    _type,
     *,
-    thead: Optional[Tuple[str, list]] = None,  # A tuple whose first item is the table head for primary axis,
-                                    # the second item has the shape same as datasets,
-                                    # such as ("primary axis label", ["data label", ...]).
-                                    # It is invisible on chart, but would show nice table header when css is unavailable.
+    headers_in_first_row=False,
+    headers_in_first_column=False,
+    legend: Optional[Legend] = None,  # https://chartscss.org/components/legend/
+
     _series_upper_bound: Optional[Callable[[], int]] = None,  # https://chartscss.org/components/stacked/#simple-vs-percentage
     value_displayer=lambda value: value,
     stacked=False,  # Only applicable to bar and column charts. https://chartscss.org/components/stacked/
-
-    starting_point=False,  # If true, the first item in (each?) series is considered as the start point
-
-    legend: Optional[Legend] = None,  # https://chartscss.org/components/legend/
 
     wrapper_id=None,
     heading: str = None,
@@ -62,102 +57,111 @@ def _chart(
 
     primary_axis=None, #show_primary_axis=False,
     data_axis=None, #show_data_axis=False,
-    show_2_secondary_axes=False,
-    show_4_secondary_axes=False,
-    show_6_secondary_axes=False,
-    show_10_secondary_axes=False,
+    show_secondary_axes: Optional[int] = None,
 
     # https://chartscss.org/components/spacing/
-    data_spacing_5=False,
-    data_spacing_20=False,
-    datasets_spacing_4=False,
+    data_spacing: Optional[int] = None,
+    datasets_spacing: Optional[int] = None,
 
     # More customizing can be done by regular css: https://chartscss.org/components/wrapper/#customizing-the-chart
+    # and https://chartscss.org/customization/
 ) -> str:
-    classes = filter(None, [
+    """
+    :param list datasets:
+        A list containing some rows, e.g. [row1, row2, ...].
+
+        Each row can be a list of cells, e.g. [cell1, cell2, ...].
+
+        Each cell is usually a number,
+        but it could also be a dict with the shape {"value": number, ...}.
+
+        Such data structure can be the outcome from ``csv.reader`` or ``csv.DictReader``
+        of the `standard Python csv module <https://docs.python.org/3/library/csv.html>`_.
+        So you can easily read raw data from a csv and feed it into this function.
+    """
+    assert rows
+    if not (rows and len(rows) > (1 if headers_in_first_row else 0)):
+        raise ValueError("rows (excluding header row) needs to contain numeric content.")
+    if show_secondary_axes and show_secondary_axes not in range(11):
+        raise ValueError("show_secondary_axes should range from 0 to 10")
+    if data_spacing and data_spacing not in range(21):
+        raise ValueError("data_spacing should range from 0 to 20")
+    if datasets_spacing and datasets_spacing not in range(21):
+        raise ValueError("datasets_spacing should range from 0 to 20")
+
+    classes = list(filter(None, [
         "charts-css",
         _type,
         "show-labels",  # Hardcoded, for now
         "show-heading" if heading else None,
         hide_data and "hide-data",
         "show-data-on-hover" if show_data_on_hover else None,
-
-        # https://chartscss.org/components/datasets/#datasets-colors
-        "multiple" if datasets and len(list(datasets.values())[0]) > 1 else None,
-
         "reverse" if reverse else None,
         "show-primary-axis",  # Hardcoded for now. That axis looks good.
         "show-data-axes",  # Hardcoded for now. That axes look good.
-
-        "show-2-secondary-axes" if show_2_secondary_axes else None,
-        "show-4-secondary-axes" if show_4_secondary_axes else None,
-        "show-6-secondary-axes" if show_6_secondary_axes else None,
-        "show-10-secondary-axes" if show_10_secondary_axes else None,
-
-        "data-spacing-5" if data_spacing_5 else None,
-        "data-spacing-20" if data_spacing_20 else None,
-        "datasets-spacing-4" if datasets_spacing_4 else None,
+        "show-{}-secondary-axes".format(show_secondary_axes) if show_secondary_axes else None,
+        "data-spacing-{}".format(data_spacing) if data_spacing else None,
+        "datasets-spacing-{}".format(datasets_spacing) if datasets_spacing else None,
         "reverse-data" if reverse_data else None,
         "reverse-datasets" if reverse_datasets else None,
         "stacked" if stacked else None,
-        ])
+        ]))
 
-    normalized_datasets = {}
-    for label, raw_items in datasets.items():
-        normalized_datasets[label] = [
-            item if isinstance(item, dict) else {"value": item} for item in raw_items]
+    def cell2dict(raw):
+        return raw if isinstance(raw, dict) else {"value": raw}
+    normalized_rows = [list(  # Normalize each cell into a dict, for easier post-process.
+        map(cell2dict, row)
+        ) for row in rows]
     padding = 0.2 if _type == "line" else 0  # TODO: How to choose a value fitting the current datasets?
+
+    def numeric_values_in_a_row(row):
+        values = [cell["value"] for cell in row[1 if headers_in_first_column else 0:]]
+        if not values:
+            raise ValueError("Inputed rows should contain at least one numeric column")
+        for v in values:
+            if not isinstance(v, (int, float)):
+                raise ValueError(
+                    "Cell ({}) needs to be either a numeric value, "
+                    "or declared as a row/column header.".format(repr(v)))
+        return values
+
+    first_data_row = 1 if headers_in_first_row else 0
+    if len(numeric_values_in_a_row(normalized_rows[first_data_row])) > 1:
+        classes.append("multiple")  # https://chartscss.org/components/datasets/#datasets-colors
+
     global_upper_bound = max(
-        (sum if stacked else max)(item["value"] for item in items)
-            for items in normalized_datasets.values()
+        (sum if stacked else max)(numeric_values_in_a_row(row))
+        for row in normalized_rows[first_data_row:]
         ) + padding  # Padding ensures the largest value show in line chart
 
     # https://chartscss.org/components/datasets/#datasets
-    rows = []
-    for label, items in normalized_datasets.items():
+    table_rows = []
+    previous_row = None
+    for y, row in enumerate(normalized_rows[first_data_row:]):
         denominator = _series_upper_bound(
-            i["value"] for i in items
+            numeric_values_in_a_row(row)
             ) if _series_upper_bound else global_upper_bound
 
-        cells = ["""            <th scope="row">{}</th>""".format(label)
-                # https://chartscss.org/components/labels/
-            ] + ["""            <td style="--size: calc( {value} / {denominator} );">
-                <span class="data">{data}</span> {tooltip}
-            </td>""".format(
-            #label=label,  # https://chartscss.org/components/labels/
-            value=item["value"],
-            denominator=denominator,
-            data=item.get("data", value_displayer(item["value"])),
-            tooltip='<span class="tooltip">{}</span>'.format(
-                # https://chartscss.org/components/tooltips/#best-practice
-                item["tooltip"]) if "tooltip" in item else "",
-            ) for item in items]
-
-        print(_type)
-        cells = ["""            <th scope="row">{}</th>""".format(label)
-                # https://chartscss.org/components/labels/
-            ] + ["""            <td style="{start} --size: calc( {value} / {denominator} );">
-                <span class="data">{data}</span> {tooltip}
-            </td>""".format(
-                start="--start: calc({value}/{denominator});".format(
-                    value=items[i-1]["value"],
+        cells = [(
+            """      <th scope="row">{}</th>""".format(cell["value"])
+            if x == 0 and headers_in_first_column else
+            """      <td style="{start}--size:calc({value}/{denominator});">
+        <span class="data">{data}</span> {tooltip}
+      </td>""".format(
+                start="--start:calc({value}/{denominator});".format(
+                    value=previous_row[x]["value"] if previous_row else cell["value"],
                     denominator=denominator,
-                    ) if (_type in ("area", "line")) and i else "",
-                value=item["value"],
+                    ) if _type in ("line", "area") else "",
+                value=cell["value"],
                 denominator=denominator,
-                data=item.get("data", value_displayer(item["value"])),
+                data=cell.get("data", value_displayer(cell["value"])),
                 tooltip='<span class="tooltip">{}</span>'.format(
                     # https://chartscss.org/components/tooltips/#best-practice
-                    item["tooltip"]) if "tooltip" in item else "",
-            ) for i, item in enumerate(items)]
-        rows.append("""    <tr>
-{}
-    </tr>""".format("\n".join(cells)))
-
-
-    if starting_point:
-        # https://chartscss.org/components/data/#starting-point
-        pass
+                    cell["tooltip"]) if "tooltip" in cell else "",
+                )
+            ) for x, cell in enumerate(row)]
+        table_rows.append("    <tr>\n{}\n    </tr>".format("\n".join(cells)))
+        previous_row = row
 
     table = """<table class='{classes}'>
   {heading}
@@ -170,14 +174,12 @@ def _chart(
         heading="<caption>{}</caption>".format(heading) if heading else "",
         thead="""  <thead>
     <tr>
-      <th scope="col">{}</th>
       {}
     </tr>
   </thead>""".format(
-            thead[0],
-            "\n      ".join('<th scope="col">{}</th>'.format(h) for h in thead[1]),
-            ) if thead else "",
-        rows="\n".join(rows),
+            "\n      ".join('<th scope="col">{}</th>'.format(h) for h in rows[0])
+            ) if headers_in_first_row else "",
+        rows="\n".join(table_rows),
         )
 
     return """<div id='{wrapper_id}'>
@@ -192,7 +194,9 @@ def _chart(
             if primary_axis else "",
         data_axis="<div class='data-axis'>{}</div>".format(data_axis)
             if data_axis else "",
-        legend=legend or "",  # TODO: Shall it be customizable to put legend before or after the table?
+        legend=LegendSquare(rows[0][first_data_row:])
+            if legend is True and headers_in_first_row  # Auto legend
+            else (legend or ""),  # TODO: Shall it be customizable to put legend before or after the table?
         ) if wrapper_id or legend else table
 
 
@@ -208,51 +212,31 @@ def column(datasets, *, stacked=False, percentage=False, **kwargs) -> str:
         "column", stacked=stacked, _series_upper_bound=sum if percentage else None,
         **kwargs)
 
-def area(datasets, **kwargs) -> str:  # TODO: First value of each dataset is considered as start value
+def area(datasets, **kwargs) -> str:
     return _chart(datasets, "area", **kwargs)
 
-def line(datasets, **kwargs) -> str:  # TODO: First value of each dataset is considered as start value
+def line(datasets, **kwargs) -> str:
     return _chart(datasets, "line", **kwargs)
 
-if __name__ == "__main__":
-    chart = line(  # This mimics the sample of https://chartscss.org/components/data/
-        {
-            "Alex": [40],
-            "Bob": [60],
-            "Charlie": [75],
-            "David": [90],
-            "Einstein": [100],
-        },
-        value_displayer="${}K".format,
-        heading="Sample of https://chartscss.org/components/data/",
-        thead=("Employee", ["Salary"]),
-        )
-    chart2 = line(  # This looks the same as the previous sample, but easier to write
-        {
-            "Salary": [40, 60, 75, 90, 100],
-        },
-        value_displayer="${}K".format,
-        heading="Sample of https://chartscss.org/components/data/",
-        thead=("Attributes", ["Alex", "Bob", "Charlie", "David", "Einstein"]),
-        )
-    chart3 = line(
-        {
-            "Asia": [20, 30, 40, 50, 75],
-            "Euro": [40, 60, 75, 90, {"value": 100, "tooltip": "This is <strong>a tooltip</strong>"}],
-        },
-        value_displayer="${}K".format,
-        data_spacing_20=True,
-        datasets_spacing_4=True,
-        show_6_secondary_axes=True,
-        #stacked=True, #percentage=True,
-        #reverse_data=True,
-        #reverse_datasets=True,
 
-        # The following options would need your own css to make them look right
-        #primary_axis="Continents",
-        #data_axis="Year",
-        legend=LegendRectangle(["1st year", "2nd year", "3rd year", "4th year", "5th year"]),
-        heading="Sample of https://chartscss.org/components/data/",
+if __name__ == "__main__":
+    heading = "Ideal for comparing groups. This mimics this sample https://chartscss.org/components/stacked/#stacked-bars"
+    chart = bar(
+        [
+            ["Continent", "#1", "#2", "#3"],
+            ["America", 50, 50, 30, 20],
+            ["Asia", 30, 30, 30, 30],
+            ["Europe", 40, 25, 25, 30],
+            ["Africa", 20, 20, 20, 20],
+        ],
+        headers_in_first_row=True,
+        headers_in_first_column=True,
+        stacked=True,
+        #percentage=True,
+        hide_data=True,  # value_displayer=lambda x: "",  # A way to hide data
+        heading=heading,
+        show_secondary_axes=5,
+        data_spacing=5,
         )
     print("""
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/charts.css/dist/charts.min.css">
