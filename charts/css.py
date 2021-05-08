@@ -1,4 +1,5 @@
-from typing import List, Optional, Tuple, Callable
+from typing import List, Optional, Tuple, Callable, Mapping
+import string
 
 __version__ = "0.1.0"
 
@@ -55,8 +56,8 @@ def _chart(
     reverse_data=False,
     reverse_datasets=False,
 
-    primary_axis=None, #show_primary_axis=False,
-    data_axis=None, #show_data_axis=False,
+    #show_primary_axis=False,
+    #show_data_axis=False,
     show_secondary_axes: Optional[int] = None,
 
     # https://chartscss.org/components/spacing/
@@ -184,16 +185,10 @@ def _chart(
 
     return """<div id='{wrapper_id}'>
 {table}
-{primary_axis}
-{data_axis}
 {legend}
 </div>""".format(
         wrapper_id=wrapper_id or "my-chart",
         table=table,
-        primary_axis="<div class='primary-axis'>{}</div>".format(primary_axis)
-            if primary_axis else "",
-        data_axis="<div class='data-axis'>{}</div>".format(data_axis)
-            if data_axis else "",
         legend=LegendSquare(rows[0][first_data_row:])
             if legend is True and headers_in_first_row  # Auto legend
             else (legend or ""),  # TODO: Shall it be customizable to put legend before or after the table?
@@ -219,26 +214,89 @@ def line(datasets, **kwargs) -> str:
     return _chart(datasets, "line", **kwargs)
 
 
-if __name__ == "__main__":
-    heading = "Ideal for comparing groups. This mimics this sample https://chartscss.org/components/stacked/#stacked-bars"
-    chart = bar(
-        [
-            ["Continent", "#1", "#2", "#3"],
-            ["America", 50, 50, 30, 20],
-            ["Asia", 30, 30, 30, 30],
-            ["Europe", 40, 25, 25, 30],
-            ["Africa", 20, 20, 20, 20],
-        ],
-        headers_in_first_row=True,
-        headers_in_first_column=True,
-        stacked=True,
-        #percentage=True,
-        hide_data=True,  # value_displayer=lambda x: "",  # A way to hide data
-        heading=heading,
-        show_secondary_axes=5,
-        data_spacing=5,
+STYLE_TEMPLATE = """
+#${wrapper_id} {
+  display: grid;
+  align-items: center;
+  justify-items: center;
+
+  grid-template-areas:
+    "header header header"
+    "sidebar_left main sidebar_right"
+    "sidebar_left lower sidebar_right"
+    "footer footer footer";
+  background-color: #eee;
+}
+#${wrapper_id} > table {grid-area: main;}
+#${wrapper_id} > .sidebar_left {
+  grid-area: sidebar_left;
+  writing-mode: tb-rl;
+  transform: rotateZ(180deg);
+}
+#${wrapper_id} > .sidebar_right {
+  grid-area: sidebar_right;
+  writing-mode: tb-rl;
+}
+#${wrapper_id} > .footer {grid-area: footer;}
+#${wrapper_id} > .header {grid-area: header;}
+"""
+
+def _wrapper(
+    main: List[str],
+    components: Mapping[str, List[str]],
+    *,
+    wrapper_id: Optional[str] = None,
+    style_template: Optional[str] = None,
+    style: Optional[str] = None,
+) -> str:
+    wrapper_id = wrapper_id or "wrapper"
+    return """
+<style>
+{style}
+</style>
+<div id="{wrapper_id}">
+{main}
+{components}
+</div>
+""".format(
+    wrapper_id=wrapper_id,
+    main="\n".join(main),
+    components="\n\n\n".join('<div class="{}">\n{}\n</div>'.format(
+        cls,
+        "\n\n".join(parts if isinstance(parts, (tuple, list)) else [parts])
+        ) for cls, parts in components.items() if parts),
+    style=string.Template(style_template or STYLE_TEMPLATE).substitute(
+        wrapper_id=wrapper_id) + (style or ""),
+    )
+
+
+def wrapper(
+    main: List[str],
+    *,
+    header: Optional[List[str]] = None,
+    footer: Optional[List[str]] = None,
+    sidebar_left: Optional[List[str]] = None,
+    sidebar_right: Optional[List[str]] = None,
+    wrapper_id: Optional[str] = None,
+    style_template: Optional[str] = None,
+    style: Optional[str] = None,
+    **kwargs
+) -> str:
+    return _wrapper(
+        main,
+        dict(
+            kwargs,  # Template might be customized to need extra k-v pairs
+            header=header,
+            footer=footer,
+            sidebar_left=sidebar_left,
+            sidebar_right=sidebar_right,
+            ),
+        wrapper_id=wrapper_id,
+        style_template=style_template,
+        style=style,
         )
-    print("""
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/charts.css/dist/charts.min.css">
-{}""".format(chart))
+
+
+if __name__ == "__main__":
+    pass
 

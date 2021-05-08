@@ -1,4 +1,4 @@
-from charts.css import bar, column, line, area
+from charts.css import bar, column, line, area, wrapper
 
 
 def minify(html):
@@ -342,98 +342,290 @@ def test_multi_datasets_stacked_by_value():
   </tbody>
 </table>""".format(heading))
 
-def foo():
-    heading = """Ideal for comparing relative differences within each group.
-This mimics this sample https://chartscss.org/components/stacked/#stacked-bars"""
-    chart = bar(
+def test_mixed_charts():
+    heading = "This sample mimics https://chartscss.org/charts/mixed/#using-css-grid"
+    price = area(
         [
-            ["Continent", "#1", "#2", "#3"],
-            ["America", 50, 50, 30, 20],
-            ["Asia", 30, 30, 30, 30],
-            ["Europe", 40, 25, 25, 30],
-            ["Africa", 20, 20, 20, 20],
+            [40],
+            [80],
+            [60],
+            [100],
+            [30],
         ],
-        headers_in_first_row=True,
-        headers_in_first_column=True,
-        stacked=True,
-        percentage=True,
         hide_data=True,
-        heading=heading,
-        show_secondary_axes=5,
-        data_spacing=5,
         )
-    assert minify(chart) == minify("""
-<table class='charts-css bar show-labels show-heading hide-data show-primary-axis show-data-axes show-5-secondary-axes data-spacing-5 stacked multiple'>
-  <caption>{}</caption>
-  <thead>
-    <tr>
-      <th scope="col">Continent</th>
-      <th scope="col">#1</th>
-      <th scope="col">#2</th>
-      <th scope="col">#3</th>
-    </tr>
-  </thead>
+    trend = line(
+        [
+            [40],
+            [60],
+            [75],
+            [90],
+            [100],
+        ],
+        hide_data=True,
+        )
+    volume = column(
+        [
+            [6],
+            [9],
+            [10],
+            [4],
+            [3],
+            [6],
+            [9],
+            [10],
+            [4],
+            [3],
+            [6],
+            [9],
+            [10],
+            [4],
+            [3],
+        ],
+        hide_data=True,
+        data_spacing=2,
+        )
+    outcome = wrapper(
+        [price, trend, volume],
+        sidebar_left="Stock Price",
+        sidebar_right="Moving Average",
+        header=heading,
+        footer="Volume",
+        style="""
+#wrapper {
+  grid-template-columns: 50px 1fr 50px;
+  grid-template-rows: 50px 250px 100px 50px;
+}
+#wrapper .area, #wrapper .line {grid-area: main}
+#wrapper .column {grid-area: lower}
+
+/* Colors */
+#wrapper > table.area {
+  --color: linear-gradient(#666, rgba(255, 255, 255, 0));
+}
+#wrapper > table.line {
+  --color: #fc1;
+}
+#wrapper > table.column tr:nth-child(even) {
+  --color: #e88;
+}
+#wrapper > table.column tr:nth-child(odd) {
+  --color: #8c8;
+}
+""",
+        )
+    assert minify(outcome) == minify("""
+<style>
+
+#wrapper {
+  display: grid;
+  align-items: center;
+  justify-items: center;
+
+  grid-template-areas:
+    "header header header"
+    "sidebar_left main sidebar_right"
+    "sidebar_left lower sidebar_right"
+    "footer footer footer";
+  background-color: #eee;
+}
+#wrapper > table {grid-area: main;}
+#wrapper > .sidebar_left {
+  grid-area: sidebar_left;
+  writing-mode: tb-rl;
+  transform: rotateZ(180deg);
+}
+#wrapper > .sidebar_right {
+  grid-area: sidebar_right;
+  writing-mode: tb-rl;
+}
+#wrapper > .footer {grid-area: footer;}
+#wrapper > .header {grid-area: header;}
+
+#wrapper {
+  grid-template-columns: 50px 1fr 50px;
+  grid-template-rows: 50px 250px 100px 50px;
+}
+#wrapper .area, #wrapper .line {grid-area: main}
+#wrapper .column {grid-area: lower}
+
+/* Colors */
+#wrapper > table.area {
+  --color: linear-gradient(#666, rgba(255, 255, 255, 0));
+}
+#wrapper > table.line {
+  --color: #fc1;
+}
+#wrapper > table.column tr:nth-child(even) {
+  --color: #e88;
+}
+#wrapper > table.column tr:nth-child(odd) {
+  --color: #8c8;
+}
+
+</style>
+<div id="wrapper">
+<table class='charts-css area show-labels hide-data show-primary-axis show-data-axes'>
+
+
   <tbody>
     <tr>
-      <th scope="row">America</th>
-      <td style="--size:calc(50/150);">
-        <span class="data">50</span>
-      </td>
-      <td style="--size:calc(50/150);">
-        <span class="data">50</span>
-      </td>
-      <td style="--size:calc(30/150);">
-        <span class="data">30</span>
-      </td>
-      <td style="--size:calc(20/150);">
-        <span class="data">20</span>
-      </td>
-    </tr>
-    <tr>
-      <th scope="row">Asia</th>
-      <td style="--size:calc(30/120);">
-        <span class="data">30</span>
-      </td>
-      <td style="--size:calc(30/120);">
-        <span class="data">30</span>
-      </td>
-      <td style="--size:calc(30/120);">
-        <span class="data">30</span>
-      </td>
-      <td style="--size:calc(30/120);">
-        <span class="data">30</span>
-      </td>
-    </tr>
-    <tr>
-      <th scope="row">Europe</th>
-      <td style="--size:calc(40/120);">
+      <td style="--start:calc(40/100);--size:calc(40/100);">
         <span class="data">40</span>
       </td>
-      <td style="--size:calc(25/120);">
-        <span class="data">25</span>
-      </td>
-      <td style="--size:calc(25/120);">
-        <span class="data">25</span>
-      </td>
-      <td style="--size:calc(30/120);">
-        <span class="data">30</span>
+    </tr>
+    <tr>
+      <td style="--start:calc(40/100);--size:calc(80/100);">
+        <span class="data">80</span>
       </td>
     </tr>
     <tr>
-      <th scope="row">Africa</th>
-      <td style="--size:calc(20/80);">
-        <span class="data">20</span>
+      <td style="--start:calc(80/100);--size:calc(60/100);">
+        <span class="data">60</span>
       </td>
-      <td style="--size:calc(20/80);">
-        <span class="data">20</span>
+    </tr>
+    <tr>
+      <td style="--start:calc(60/100);--size:calc(100/100);">
+        <span class="data">100</span>
       </td>
-      <td style="--size:calc(20/80);">
-        <span class="data">20</span>
-      </td>
-      <td style="--size:calc(20/80);">
-        <span class="data">20</span>
+    </tr>
+    <tr>
+      <td style="--start:calc(100/100);--size:calc(30/100);">
+        <span class="data">30</span>
       </td>
     </tr>
   </tbody>
-</table>""".format(heading))
+</table>
+<table class='charts-css line show-labels hide-data show-primary-axis show-data-axes'>
+
+
+  <tbody>
+    <tr>
+      <td style="--start:calc(40/100.2);--size:calc(40/100.2);">
+        <span class="data">40</span>
+      </td>
+    </tr>
+    <tr>
+      <td style="--start:calc(40/100.2);--size:calc(60/100.2);">
+        <span class="data">60</span>
+      </td>
+    </tr>
+    <tr>
+      <td style="--start:calc(60/100.2);--size:calc(75/100.2);">
+        <span class="data">75</span>
+      </td>
+    </tr>
+    <tr>
+      <td style="--start:calc(75/100.2);--size:calc(90/100.2);">
+        <span class="data">90</span>
+      </td>
+    </tr>
+    <tr>
+      <td style="--start:calc(90/100.2);--size:calc(100/100.2);">
+        <span class="data">100</span>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<table class='charts-css column show-labels hide-data show-primary-axis show-data-axes data-spacing-2'>
+
+
+  <tbody>
+    <tr>
+      <td style="--size:calc(6/10);">
+        <span class="data">6</span>
+      </td>
+    </tr>
+    <tr>
+      <td style="--size:calc(9/10);">
+        <span class="data">9</span>
+      </td>
+    </tr>
+    <tr>
+      <td style="--size:calc(10/10);">
+        <span class="data">10</span>
+      </td>
+    </tr>
+    <tr>
+      <td style="--size:calc(4/10);">
+        <span class="data">4</span>
+      </td>
+    </tr>
+    <tr>
+      <td style="--size:calc(3/10);">
+        <span class="data">3</span>
+      </td>
+    </tr>
+    <tr>
+      <td style="--size:calc(6/10);">
+        <span class="data">6</span>
+      </td>
+    </tr>
+    <tr>
+      <td style="--size:calc(9/10);">
+        <span class="data">9</span>
+      </td>
+    </tr>
+    <tr>
+      <td style="--size:calc(10/10);">
+        <span class="data">10</span>
+      </td>
+    </tr>
+    <tr>
+      <td style="--size:calc(4/10);">
+        <span class="data">4</span>
+      </td>
+    </tr>
+    <tr>
+      <td style="--size:calc(3/10);">
+        <span class="data">3</span>
+      </td>
+    </tr>
+    <tr>
+      <td style="--size:calc(6/10);">
+        <span class="data">6</span>
+      </td>
+    </tr>
+    <tr>
+      <td style="--size:calc(9/10);">
+        <span class="data">9</span>
+      </td>
+    </tr>
+    <tr>
+      <td style="--size:calc(10/10);">
+        <span class="data">10</span>
+      </td>
+    </tr>
+    <tr>
+      <td style="--size:calc(4/10);">
+        <span class="data">4</span>
+      </td>
+    </tr>
+    <tr>
+      <td style="--size:calc(3/10);">
+        <span class="data">3</span>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<div class="header">
+This sample mimics https://chartscss.org/charts/mixed/#using-css-grid
+</div>
+
+
+<div class="footer">
+Volume
+</div>
+
+
+<div class="sidebar_left">
+Stock Price
+</div>
+
+
+<div class="sidebar_right">
+Moving Average
+</div>
+</div>
+""")
 
