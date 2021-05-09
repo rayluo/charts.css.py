@@ -1,4 +1,6 @@
-from charts.css import bar, column, line, area, wrapper
+from charts.css import (
+    bar, column, line, area, wrapper,
+    LegendRectangle, LegendSquare)
 
 
 def minify(html):
@@ -110,7 +112,7 @@ def test_single_dataset_with_col_and_row_headers():
 
 def test_multi_datasets_with_auto_legend():
     heading = "This mimics this sample https://chartscss.org/components/datasets/#datasets-colors"
-    chart = column(  # This mimics the sample of https://chartscss.org/components/data/
+    chart = column(
         [
             ["Continent", "1st year", "2nd year", "3rd year", "4th year", "5th year"],
             ["Asia", 20, 30, 40, 50, 75],
@@ -118,14 +120,13 @@ def test_multi_datasets_with_auto_legend():
         ],
         headers_in_first_row=True,
         headers_in_first_column=True,
-        legend=True,
+        legend=LegendSquare,
         value_displayer="${}K".format,
         heading=heading,
         data_spacing=20,
         datasets_spacing=4,
         )
     assert minify(chart) == minify("""
-<div id='my-chart'>
 <table class='charts-css column show-labels show-heading show-primary-axis show-data-axes data-spacing-20 datasets-spacing-4 multiple'>
   <caption>This mimics this sample https://chartscss.org/components/datasets/#datasets-colors</caption>
   <thead>
@@ -180,7 +181,7 @@ def test_multi_datasets_with_auto_legend():
 
 
 <ul class='charts-css legend legend-square '><li>1st year</li><li>2nd year</li><li>3rd year</li><li>4th year</li><li>5th year</li></ul>
-</div>""")
+""")
 
 
 def test_multi_datasets_line_chart_handles_start_value():
@@ -386,85 +387,67 @@ def test_mixed_charts():
         data_spacing=2,
         )
     outcome = wrapper(
-        [price, trend, volume],
-        sidebar_left="Stock Price",
-        sidebar_right="Moving Average",
-        header=heading,
-        footer="Volume",
-        style="""
-#wrapper {
-  grid-template-columns: 50px 1fr 50px;
-  grid-template-rows: 50px 250px 100px 50px;
-}
-#wrapper .area, #wrapper .line {grid-area: main}
-#wrapper .column {grid-area: lower}
+        price, trend, volume,
+        "<div style='grid-area:sidebar_left; writing-mode: sideways-lr;'>Stock Price</div>",
+        "<div style='grid-area:sidebar_right; writing-mode: sideways-rl;'>Moving Average</div>",
+        "<div style='grid-area:header'>{}</div>".format(heading),
+        "<div style='grid-area:footer'>Volume</div>",
+        arrangement="""
+.area, .line {grid-area: main}
+.column {grid-area: basement}
 
 /* Colors */
-#wrapper > table.area {
+table.area {
   --color: linear-gradient(#666, rgba(255, 255, 255, 0));
 }
-#wrapper > table.line {
+table.line {
   --color: #fc1;
 }
-#wrapper > table.column tr:nth-child(even) {
+table.column tr:nth-child(even) {
   --color: #e88;
 }
-#wrapper > table.column tr:nth-child(odd) {
+table.column tr:nth-child(odd) {
   --color: #8c8;
 }
 """,
         )
     assert minify(outcome) == minify("""
 <style>
-
-#wrapper {
+#my_chart {
   display: grid;
   align-items: center;
   justify-items: center;
+  background-color: #eee;
 
+  height: calc(100vh - 1em);
   grid-template-areas:
     "header header header"
+    "sidebar_left loft sidebar_right"
     "sidebar_left main sidebar_right"
-    "sidebar_left lower sidebar_right"
+    "sidebar_left basement sidebar_right"
     "footer footer footer";
-  background-color: #eee;
+  grid-template-columns: auto 1fr auto;
+  grid-template-rows: auto auto 1fr auto auto;
 }
-#wrapper > table {grid-area: main;}
-#wrapper > .sidebar_left {
-  grid-area: sidebar_left;
-  writing-mode: tb-rl;
-  transform: rotateZ(180deg);
-}
-#wrapper > .sidebar_right {
-  grid-area: sidebar_right;
-  writing-mode: tb-rl;
-}
-#wrapper > .footer {grid-area: footer;}
-#wrapper > .header {grid-area: header;}
 
-#wrapper {
-  grid-template-columns: 50px 1fr 50px;
-  grid-template-rows: 50px 250px 100px 50px;
-}
-#wrapper .area, #wrapper .line {grid-area: main}
-#wrapper .column {grid-area: lower}
+.area, .line {grid-area: main}
+.column {grid-area: basement}
 
 /* Colors */
-#wrapper > table.area {
+table.area {
   --color: linear-gradient(#666, rgba(255, 255, 255, 0));
 }
-#wrapper > table.line {
+table.line {
   --color: #fc1;
 }
-#wrapper > table.column tr:nth-child(even) {
+table.column tr:nth-child(even) {
   --color: #e88;
 }
-#wrapper > table.column tr:nth-child(odd) {
+table.column tr:nth-child(odd) {
   --color: #8c8;
 }
-
 </style>
-<div id="wrapper">
+<div id="my_chart">
 <table class='charts-css area show-labels hide-data show-primary-axis show-data-axes'>
 
 
@@ -496,6 +479,7 @@ def test_mixed_charts():
     </tr>
   </tbody>
 </table>
+
 <table class='charts-css line show-labels hide-data show-primary-axis show-data-axes'>
 
 
@@ -527,6 +511,7 @@ def test_mixed_charts():
     </tr>
   </tbody>
 </table>
+
 <table class='charts-css column show-labels hide-data show-primary-axis show-data-axes data-spacing-2'>
 
 
@@ -608,24 +593,11 @@ def test_mixed_charts():
     </tr>
   </tbody>
 </table>
-<div class="header">
-This sample mimics https://chartscss.org/charts/mixed/#using-css-grid
-</div>
 
-
-<div class="footer">
-Volume
-</div>
-
-
-<div class="sidebar_left">
-Stock Price
-</div>
-
-
-<div class="sidebar_right">
-Moving Average
-</div>
+<div style='grid-area:sidebar_left; writing-mode: sideways-lr;'>Stock Price</div>
+<div style='grid-area:sidebar_right; writing-mode: sideways-rl;'>Moving Average</div>
+<div style='grid-area:header'>This sample mimics https://chartscss.org/charts/mixed/#using-css-grid</div>
+<div style='grid-area:footer'>Volume</div>
 </div>
 """)
 

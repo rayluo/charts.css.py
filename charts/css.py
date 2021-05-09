@@ -1,4 +1,4 @@
-from typing import List, Optional, Tuple, Callable, Mapping
+from typing import List, Optional, Tuple, Callable, Mapping, Union
 import string
 
 __version__ = "0.1.0"
@@ -33,6 +33,9 @@ class LegendRhombus(Legend):
 class LegendLine(Legend):
     _shape = "legend-line"
 
+SHOW_SECONDARY_AXES = range(11)
+DATA_SPACING = range(21)
+DATASETS_SPACING = range(21)
 
 def _chart(
     rows: list,
@@ -41,12 +44,12 @@ def _chart(
     headers_in_first_row=False,
     headers_in_first_column=False,
     legend: Optional[Legend] = None,  # https://chartscss.org/components/legend/
+    legend_inline=False,
 
     _series_upper_bound: Optional[Callable[[], int]] = None,  # https://chartscss.org/components/stacked/#simple-vs-percentage
     value_displayer=lambda value: value,
     stacked=False,  # Only applicable to bar and column charts. https://chartscss.org/components/stacked/
 
-    wrapper_id=None,
     heading: str = None,
     hide_data=False,
     show_data_on_hover=False,
@@ -68,7 +71,7 @@ def _chart(
     # and https://chartscss.org/customization/
 ) -> str:
     """
-    :param list datasets:
+    :param list rows:
         A list containing some rows, e.g. [row1, row2, ...].
 
         Each row can be a list of cells, e.g. [cell1, cell2, ...].
@@ -83,12 +86,15 @@ def _chart(
     assert rows
     if not (rows and len(rows) > (1 if headers_in_first_row else 0)):
         raise ValueError("rows (excluding header row) needs to contain numeric content.")
-    if show_secondary_axes and show_secondary_axes not in range(11):
-        raise ValueError("show_secondary_axes should range from 0 to 10")
-    if data_spacing and data_spacing not in range(21):
-        raise ValueError("data_spacing should range from 0 to 20")
-    if datasets_spacing and datasets_spacing not in range(21):
-        raise ValueError("datasets_spacing should range from 0 to 20")
+    if show_secondary_axes and show_secondary_axes not in SHOW_SECONDARY_AXES:
+        raise ValueError(
+            "show_secondary_axes should range in {}".format(SHOW_SECONDARY_AXES))
+    if data_spacing and data_spacing not in DATA_SPACING:
+        raise ValueError(
+            "data_spacing should range in {}".format(DATA_SPACING))
+    if datasets_spacing and datasets_spacing not in DATASETS_SPACING:
+        raise ValueError(
+            "datasets_spacing should range in {}".format(DATASETS_SPACING))
 
     classes = list(filter(None, [
         "charts-css",
@@ -170,7 +176,8 @@ def _chart(
   <tbody>
 {rows}
   </tbody>
-</table>""".format(
+</table>
+""".format(
         classes=" ".join(classes),
         heading="<caption>{}</caption>".format(heading) if heading else "",
         thead="""  <thead>
@@ -182,119 +189,71 @@ def _chart(
             ) if headers_in_first_row else "",
         rows="\n".join(table_rows),
         )
-
-    return """<div id='{wrapper_id}'>
-{table}
-{legend}
-</div>""".format(
-        wrapper_id=wrapper_id or "my-chart",
+    return "{table}{legend}".format(  # Legend's actual position can be customized by css
         table=table,
-        legend=LegendSquare(rows[0][first_data_row:])
-            if legend is True and headers_in_first_row  # Auto legend
-            else (legend or ""),  # TODO: Shall it be customizable to put legend before or after the table?
-        ) if wrapper_id or legend else table
+        legend=legend(rows[0][first_data_row:], inline=legend_inline),
+        ) if legend and headers_in_first_row else table
 
-
-def bar(datasets, *, stacked=False, percentage=False, **kwargs) -> str:
+def bar(rows, *, stacked=False, percentage=False, **kwargs) -> str:
     return _chart(
-        datasets,
+        rows,
         "bar", stacked=stacked, _series_upper_bound=sum if percentage else None,
         **kwargs)
 
-def column(datasets, *, stacked=False, percentage=False, **kwargs) -> str:
+def column(rows, *, stacked=False, percentage=False, **kwargs) -> str:
     return _chart(
-        datasets,
+        rows,
         "column", stacked=stacked, _series_upper_bound=sum if percentage else None,
         **kwargs)
 
-def area(datasets, **kwargs) -> str:
-    return _chart(datasets, "area", **kwargs)
+def area(rows, **kwargs) -> str:
+    return _chart(rows, "area", **kwargs)
 
-def line(datasets, **kwargs) -> str:
-    return _chart(datasets, "line", **kwargs)
+def line(rows, **kwargs) -> str:
+    return _chart(rows, "line", **kwargs)
 
 
-STYLE_TEMPLATE = """
+LAYOUT = """
 #${wrapper_id} {
   display: grid;
   align-items: center;
   justify-items: center;
+  background-color: #eee;
 
+  height: calc(100vh - 1em);
   grid-template-areas:
     "header header header"
+    "sidebar_left loft sidebar_right"
     "sidebar_left main sidebar_right"
-    "sidebar_left lower sidebar_right"
+    "sidebar_left basement sidebar_right"
     "footer footer footer";
-  background-color: #eee;
+  grid-template-columns: auto 1fr auto;
+  grid-template-rows: auto auto 1fr auto auto;
 }
-#${wrapper_id} > table {grid-area: main;}
-#${wrapper_id} > .sidebar_left {
-  grid-area: sidebar_left;
-  writing-mode: tb-rl;
-  transform: rotateZ(180deg);
-}
-#${wrapper_id} > .sidebar_right {
-  grid-area: sidebar_right;
-  writing-mode: tb-rl;
-}
-#${wrapper_id} > .footer {grid-area: footer;}
-#${wrapper_id} > .header {grid-area: header;}
 """
 
-def _wrapper(
-    main: List[str],
-    components: Mapping[str, List[str]],
-    *,
-    wrapper_id: Optional[str] = None,
-    style_template: Optional[str] = None,
-    style: Optional[str] = None,
-) -> str:
-    wrapper_id = wrapper_id or "wrapper"
-    return """
-<style>
-{style}
-</style>
+ARRANGEMENT = """
+table.charts-css {grid-area: main;}
+ul.charts-css.legend {
+  grid-area: sidebar_right;
+}
+"""  # Hint: You could further customize writing mode in sidebars by
+     # https://developer.mozilla.org/en-US/docs/Web/CSS/writing-mode#examples
+
+def wrapper(*charts, wrapper_id=None, layout=None, arrangement=None):
+    wrapper_id = wrapper_id or "my_chart"
+    return """<style>{layout}{arrangement}</style>
 <div id="{wrapper_id}">
-{main}
-{components}
+{charts}
 </div>
 """.format(
     wrapper_id=wrapper_id,
-    main="\n".join(main),
-    components="\n\n\n".join('<div class="{}">\n{}\n</div>'.format(
-        cls,
-        "\n\n".join(parts if isinstance(parts, (tuple, list)) else [parts])
-        ) for cls, parts in components.items() if parts),
-    style=string.Template(style_template or STYLE_TEMPLATE).substitute(
-        wrapper_id=wrapper_id) + (style or ""),
+    charts="\n".join(charts),
+    layout=string.Template(layout or LAYOUT).safe_substitute(wrapper_id=wrapper_id),
+    arrangement=string.Template(arrangement or ARRANGEMENT).safe_substitute(wrapper_id=wrapper_id),
     )
 
-
-def wrapper(
-    main: List[str],
-    *,
-    header: Optional[List[str]] = None,
-    footer: Optional[List[str]] = None,
-    sidebar_left: Optional[List[str]] = None,
-    sidebar_right: Optional[List[str]] = None,
-    wrapper_id: Optional[str] = None,
-    style_template: Optional[str] = None,
-    style: Optional[str] = None,
-    **kwargs
-) -> str:
-    return _wrapper(
-        main,
-        dict(
-            kwargs,  # Template might be customized to need extra k-v pairs
-            header=header,
-            footer=footer,
-            sidebar_left=sidebar_left,
-            sidebar_right=sidebar_right,
-            ),
-        wrapper_id=wrapper_id,
-        style_template=style_template,
-        style=style,
-        )
+STYLESHEET = '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/charts.css/dist/charts.min.css">'
 
 
 if __name__ == "__main__":
