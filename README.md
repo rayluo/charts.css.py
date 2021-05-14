@@ -1,17 +1,67 @@
-# python-project-template
-A minimalist template to start a new Python project.
+# charts.css.py
+
+As implied by its name, `charts.css.py` brings `charts.css` to Python.
+
+[Charts.css](https://chartscss.org/) is a pure-CSS data visualization framework.
+It offers [advantages over traditional JS-heavy chart libraries](https://chartscss.org/docs/#alternatives).
+
+`charts.css.py` provides a pythonic API on top of `charts.css`,
+so that you can largely avoid working directly at HTML and CSS level.
+
+
+## Installation
+
+`pip install charts.css.py`
 
 
 ## Usage
 
-1. From github web interface,
-   [use this repo as a template](https://github.com/rayluo/python-project-template/generate)
-   to start your new project, then you can clone your project into your local machine.
-2. `git mv my_package your_prj_name`
-   (By the way, if you need inspiration on deciding your project name,
-   read [this](https://www.python.org/dev/peps/pep-0423/#use-a-single-name).)
-3. Modify `setup.cfg` and this `README.md`, possibly also `LICENSE`.
-4. Commit your change. You are now ready to work on YOUR project!
-5. Optionally, rename `your_prj_name/main_module.py` into your preferred module name.
-   If you do so, do not forget to also modify `your_prj_name/__init__.py` accordingly.
+`charts.css.py` process data by converting your 2-dimension number list into an HTML table, which is properly styled with CSS classes.
+Then you write such a string into your HTML page, together with
+`<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/charts.css/dist/charts.min.css">`,
+the visual representation will be rendered by browser.
+
+For example, the following code snippet can convert a 2-dimension list into bar chart:
+
+```python
+    from charts.css import bar, STYLESHEET
+    chart = bar(
+       [
+            ["Continent", "1st year", "2nd year", "3rd year", "4th year", "5th year"],
+            ["Asia", 20.0, 30.0, 40.0, 50.0, 75.0],
+            ["Euro", 40.0, 60.0, 75.0, 90.0, 100.0],
+        ],
+        headers_in_first_row=True,
+        headers_in_first_column=True,
+        )
+    open("output.html", "w").write(STYLESHEET + chart)
+```
+
+The output.html will be rendered in browser like this:
+
+![Sample output](https://raw.githubusercontent.com/rayluo/charts.css.py/dev/sample/sample_chart.png)
+
+
+## Advanced Usage
+
+There are currently 4 different charts implemented: `bar`, `column`, `line`, `area`.
+[All those methods support these parameters](https://github.com/rayluo/charts.css.py/blob/dev/charts/css.py#L41-L68)
+to further customize the chart appearance.
+`bar()` and `column()` also support two extra parameters:
+`stacked: boolean` and `percentage: boolean`.
+
+There is another experimental helper `wrapper(...)` which can be used to:
+
+* customize the display position of legend
+  (you would need to use your HTML and CSS skill for this)
+* potentially mixed multiple charts and overlay them together.
+
+Please read the
+[unit test](https://github.com/rayluo/charts.css.py/blob/dev/tests/test_css.py)
+for more examples.
+
+Lastly, this package also provides a command-line tool `csv2chart`.
+You can use it to convert csv file into an html file.
+For example, `csv2chart sample.csv output.html`.
+You can also run `csv2chart -h` to know all the parameters it supports.
 
