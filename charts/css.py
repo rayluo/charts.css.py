@@ -1,12 +1,12 @@
-from typing import List, Optional, Tuple, Callable, Mapping, Union
-import string
+## Avoid `typing` due to its significant overhead in some Python implementation
+#from typing import Optional, Callable, List
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
 
 class Legend:  # https://chartscss.org/components/legend/
     _shape = ""
-    def __init__(self, legends: List[str], inline=None):
+    def __init__(self, legends: list, inline=None):
         self._legends = legends
         self._inline = inline  # True if inline is None else inline
     def __str__(self):
@@ -43,10 +43,11 @@ def _chart(
     *,
     headers_in_first_row=False,
     headers_in_first_column=False,
-    legend: Optional[Legend] = None,  # https://chartscss.org/components/legend/
+    legend=None,  # https://chartscss.org/components/legend/
     legend_inline=False,
 
-    _series_upper_bound: Optional[Callable[[], int]] = None,  # https://chartscss.org/components/stacked/#simple-vs-percentage
+    _series_upper_bound=None,  # In the shape of lambda a_list: a_value
+        # https://chartscss.org/components/stacked/#simple-vs-percentage
     value_displayer=lambda value: value,
     stacked=False,  # Only applicable to bar and column charts. https://chartscss.org/components/stacked/
 
@@ -61,11 +62,11 @@ def _chart(
 
     #show_primary_axis=False,
     #show_data_axis=False,
-    show_secondary_axes: Optional[int] = None,
+    show_secondary_axes=None,
 
     # https://chartscss.org/components/spacing/
-    data_spacing: Optional[int] = None,
-    datasets_spacing: Optional[int] = None,
+    data_spacing=None,
+    datasets_spacing=None,
 
     # More customizing can be done by regular css: https://chartscss.org/components/wrapper/#customizing-the-chart
     # and https://chartscss.org/customization/
@@ -241,6 +242,7 @@ ul.charts-css.legend {
      # https://developer.mozilla.org/en-US/docs/Web/CSS/writing-mode#examples
 
 def wrapper(*charts, wrapper_id=None, layout=None, arrangement=None):
+    import string
     wrapper_id = wrapper_id or "my_chart"
     return """<style>{layout}{arrangement}</style>
 <div id="{wrapper_id}">
@@ -254,8 +256,3 @@ def wrapper(*charts, wrapper_id=None, layout=None, arrangement=None):
     )
 
 STYLESHEET = '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/charts.css/dist/charts.min.css">'
-
-
-if __name__ == "__main__":
-    pass
-
