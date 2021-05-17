@@ -1,7 +1,7 @@
 ## Avoid `typing` due to its significant overhead in some Python implementation
 #from typing import Optional, Callable, List
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
 
 class Legend:  # https://chartscss.org/components/legend/
@@ -256,8 +256,3 @@ def wrapper(*charts, wrapper_id=None, layout=None, arrangement=None):
     )
 
 STYLESHEET = '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/charts.css/dist/charts.min.css">'
-
-
-if __name__ == "__main__":
-    pass
-
