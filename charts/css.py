@@ -210,7 +210,9 @@ def column(rows, *, stacked=False, percentage=False, **kwargs) -> str:
 def area(rows, **kwargs) -> str:
     return _chart(rows, "area", **kwargs)
 
-def line(rows, **kwargs) -> str:
+def line(rows, data_spacing=None, datasets_spacing=None, **kwargs) -> str:
+    if data_spacing or datasets_spacing:
+        raise ValueError("data_spacing or datasets_spacing would break line into segments")
     return _chart(rows, "line", **kwargs)
 
 
