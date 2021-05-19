@@ -48,16 +48,17 @@ def main():
         '--legend', nargs='?', choices=legends.keys(), help="Legend type")
     parser.add_argument('--legend_inline', action="store_true")
     parser.add_argument('--stacked', action="store_true")
+    parser.add_argument('--hide_data', action="store_true")
     parser.add_argument('--heading')
     parser.add_argument(
         '--secondary_axes',
         nargs='?', type=int, default=5, choices=SHOW_SECONDARY_AXES)
     parser.add_argument(
         '--data_spacing',
-        nargs='?', type=int, default=20, choices=DATA_SPACING)
+        nargs='?', type=int, default=0, choices=DATA_SPACING)
     parser.add_argument(
         '--datasets_spacing',
-        nargs='?', type=int, default=5, choices=DATASETS_SPACING)
+        nargs='?', type=int, default=0, choices=DATASETS_SPACING)
     parser.add_argument('--value_displayer', default="{}",
         help="A string template containing a pair of curly brackets, e.g. '${}K'")
 
@@ -74,6 +75,7 @@ def main():
         data_spacing=args.data_spacing,
         datasets_spacing=args.datasets_spacing,
         value_displayer=args.value_displayer.format,
+        hide_data=args.hide_data,
         )))
 
 if __name__ == "__main__":
