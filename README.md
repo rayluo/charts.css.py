@@ -21,12 +21,12 @@ Then you write such a string into your HTML page, together with
 `<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/charts.css/dist/charts.min.css">`,
 the visual representation will be rendered by browser.
 
-For example, the following code snippet can convert a 2-dimension list into bar chart:
+For example, the following code snippet can convert a 2-dimension list into column chart:
 
 ```python
-    from charts.css import bar, STYLESHEET
-    chart = bar(
-       [
+    from charts.css import column, STYLESHEET
+    chart = column(
+        [
             ["Continent", "1st year", "2nd year", "3rd year", "4th year", "5th year"],
             ["Asia", 20.0, 30.0, 40.0, 50.0, 75.0],
             ["Euro", 40.0, 60.0, 75.0, 90.0, 100.0],
@@ -34,6 +34,10 @@ For example, the following code snippet can convert a 2-dimension list into bar 
         headers_in_first_row=True,
         headers_in_first_column=True,
         )
+    # Now, variable chart contains html snippet of "<table>...</table>", and
+    # STYLESHEET is just a constant string of "<link href='https://.../charts.css'>".
+    # You can somehow insert them into the proper places of your full html page.
+    # Here in this sample, we take a shortcut by simply concatenating them.
     open("output.html", "w").write(STYLESHEET + chart)
 ```
 
