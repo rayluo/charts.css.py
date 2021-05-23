@@ -1,0 +1,25 @@
+name: Publish to Github Pages (you still need to enable Github Pages for your project)
+
+on:
+  push:
+    branches: [ dev ]
+  pull_request:
+    branches: [ dev ]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out
+        uses: actions/checkout@v2
+
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+
+      - name: Publish to GitHub Pages
+        uses: rayluo/github-pages-overwriter@v1.2
+        with:
+          source-directory: website
+

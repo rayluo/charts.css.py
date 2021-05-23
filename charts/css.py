@@ -1,7 +1,7 @@
 ## Avoid `typing` due to its significant overhead in some Python implementation
 #from typing import Optional, Callable, List
 
-__version__ = "0.2.0"
+__version__ = "0.3.0"
 
 
 class Legend:  # https://chartscss.org/components/legend/
@@ -123,7 +123,10 @@ def _chart(
     padding = 0.2 if _type == "line" else 0  # TODO: How to choose a value fitting the current datasets?
 
     def numeric_values_in_a_row(row):
-        values = [cell["value"] for cell in row[1 if headers_in_first_column else 0:]]
+        _data_starts_at_row = (
+            # Brython 3.7 and 3.8 do not support merging this ternary into next line
+            1 if headers_in_first_column else 0)
+        values = [cell["value"] for cell in row[_data_starts_at_row:]]
         if not values:
             raise ValueError("Inputed rows should contain at least one numeric column")
         for v in values:
@@ -210,7 +213,9 @@ def column(rows, *, stacked=False, percentage=False, **kwargs) -> str:
 def area(rows, **kwargs) -> str:
     return _chart(rows, "area", **kwargs)
 
-def line(rows, **kwargs) -> str:
+def line(rows, data_spacing=None, datasets_spacing=None, **kwargs) -> str:
+    if data_spacing or datasets_spacing:
+        raise ValueError("data_spacing or datasets_spacing would break line into segments")
     return _chart(rows, "line", **kwargs)
 
 
