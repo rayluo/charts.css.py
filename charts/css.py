@@ -1,7 +1,7 @@
 ## Avoid `typing` due to its significant overhead in some Python implementation
 #from typing import Optional, Callable, List
 
-__version__ = "0.2.0"
+__version__ = "0.3.0"
 
 
 class Legend:  # https://chartscss.org/components/legend/
