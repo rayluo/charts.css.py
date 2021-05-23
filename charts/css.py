@@ -123,7 +123,10 @@ def _chart(
     padding = 0.2 if _type == "line" else 0  # TODO: How to choose a value fitting the current datasets?
 
     def numeric_values_in_a_row(row):
-        values = [cell["value"] for cell in row[1 if headers_in_first_column else 0:]]
+        _data_starts_at_row = (
+            # Brython 3.7 and 3.8 do not support merging this ternary into next line
+            1 if headers_in_first_column else 0)
+        values = [cell["value"] for cell in row[_data_starts_at_row:]]
         if not values:
             raise ValueError("Inputed rows should contain at least one numeric column")
         for v in values:
