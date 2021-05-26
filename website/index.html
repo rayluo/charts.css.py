@@ -87,7 +87,7 @@ If your project is powered by Brython, you can choose to use our JS package.
 (The version number below might not be up-to-date. Please get latest version from
 <a href="https://github.com/rayluo/charts.css.py/releases" target=_blank>Release page</a>.)
 <pre>
-&lt;script src="https://github.com/rayluo/charts.css.py/releases/download/0.2.0/charts.css.py-brython.js"&gt;&lt;/script&gt;
+&lt;script src="https://github.com/rayluo/charts.css.py/releases/download/0.3.0/charts.css.py-brython.js"&gt;&lt;/script&gt;
 </pre>
 
 <h2>Configuration</h2>
@@ -194,7 +194,7 @@ chart = column(
     data_spacing=20,
     datasets_spacing=4,
     heading="Charts.css.py global sales volume",
-    legend=LegendRhombus,  # Legend is meaningful when you have multiple datasets
+    legend=LegendCircle,  # Legend is meaningful when you have multiple datasets with headers
     legend_inline=True,  # Optional
     value_displayer="${}K".format,  # More convenient than a lambda
     )
@@ -214,8 +214,7 @@ Simply enable that, you will get a stacked bar chart (or column chart).
 <script type="text/python" id="column_stacked_sample">
 from charts.css import (
     column,
-    LegendCircle, LegendEllipse, LegendSquare,
-    LegendRectangle, LegendRhombus, LegendLine)
+    LegendCircle, LegendEllipse, LegendSquare, LegendRectangle, LegendRhombus, LegendLine)
 chart = column(
     [
         ["Continent", "1st year", "2nd year", "3rd year", "4th year", "5th year"],
@@ -229,7 +228,7 @@ chart = column(
     headers_in_first_column=True,
     data_spacing=20,
     heading="Charts.css.py global sales volume",
-    legend=LegendRhombus,  # Legend works best when you have multiple datasets
+    legend=LegendEllipse,  # Legend is meaningful when you have multiple datasets with headers
     legend_inline=True,  # Optional
     value_displayer="${}K".format,  # More convenient than a lambda
     )
@@ -248,8 +247,7 @@ A <code>percentage=True</code> can switch stacked column or bar chart to percent
 <script type="text/python" id="column_stacked_percentage_sample">
 from charts.css import (
     column,
-    LegendCircle, LegendEllipse, LegendSquare,
-    LegendRectangle, LegendRhombus, LegendLine)
+    LegendCircle, LegendEllipse, LegendSquare, LegendRectangle, LegendRhombus, LegendLine)
 chart = column(
     [
         ["Continent", "1st year", "2nd year", "3rd year", "4th year", "5th year"],
@@ -264,7 +262,7 @@ chart = column(
     headers_in_first_column=True,
     data_spacing=20,
     heading="Charts.css.py global sales volume",
-    legend=LegendRhombus,  # Legend works best when you have multiple datasets
+    legend=LegendSquare,  # Legend is meaningful when you have multiple datasets with headers
     legend_inline=True,  # Optional
     value_displayer="${}K".format,  # More convenient than a lambda
     )
@@ -283,7 +281,7 @@ The input is still a 2-dimension list.
 Note that each vertical "column" - rather than the horizontal "row" - is rendered as a horizontal line.
 <pre id="line_source"></pre>
 <script type="text/python" id="line_sample">
-from charts.css import line
+from charts.css import line, LegendRectangle
 chart = line(
     [
         ["Date", "AAPL", "MSFT", "ORCL", "QCOM", "CSCO"],
@@ -293,6 +291,8 @@ chart = line(
     ],
     headers_in_first_row=True,
     headers_in_first_column=True,
+    legend=LegendRectangle,  # Legend is meaningful when you have multiple datasets with headers
+    legend_inline=True,
     heading="Investment Portfolio",
     )
 # Now, variable chart contains html snippet of "< table >...< /table >",
@@ -307,7 +307,7 @@ document["line_output"].html = chart
 Area charts work similar to line charts, plus they display raw data with colors between axis and line.
 <pre id="area_source"></pre>
 <script type="text/python" id="area_sample">
-from charts.css import area
+from charts.css import area, LegendRhombus
 chart = area(
     [
         ["Date", "AAPL", "MSFT", "ORCL"],
@@ -317,6 +317,8 @@ chart = area(
     ],
     headers_in_first_row=True,
     headers_in_first_column=True,
+    legend=LegendRhombus,  # Legend is meaningful when you have multiple datasets with headers
+    legend_inline=True,
     heading="Investment Portfolio",
     )
 # Now, variable chart contains html snippet of "< table >...< /table >",
@@ -328,7 +330,7 @@ document["area_output"].html = chart
 <script>document.getElementById("area_source").innerHTML = document.getElementById("area_sample").innerHTML</script>
 
     <script src="https://cdn.jsdelivr.net/npm/brython@3/brython.min.js"></script>
-    <script src="https://github.com/rayluo/charts.css.py/releases/download/0.2.0/charts.css.py-brython.js"></script>
+    <script src="https://github.com/rayluo/charts.css.py/releases/download/0.3.0/charts.css.py-brython.js"></script>
   </body>
 </html>
 
