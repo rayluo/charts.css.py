@@ -49,12 +49,13 @@ but an HTML snippet for you to insert into your html page,
 which will be rendered by <code>charts.css</code>.
 </p>
 
+<section class="sample">
 <h2>Bar chart with single dataset</h2>
 Let's start this document with a simple sample.
 Our first sample shows the basic usage pattern, visualizing single dataset with default effect.
 You still need to organize your single dataset as a 2-dimension list.
-<pre id="bar1r_source"></pre>
-<script type="text/python" id="bar1r_sample">
+<pre></pre>
+<script type="text/python">
 from charts.css import bar
 chart = bar(
     [
@@ -78,7 +79,7 @@ from browser import document
 document["bar1r_output"].html = chart
 </script>
 <div id="bar1r_output">Loading......</div>
-<script>document.getElementById("bar1r_source").innerHTML = document.getElementById("bar1r_sample").innerHTML</script>
+</section>
 
 <h2>Installation</h2>
 If you are working on a normal Python project, you can install by <code>pip</code>:
@@ -132,6 +133,7 @@ data = [
     ]
 </pre>
 
+<section class="sample">
 <h2>Bar chart with single dataset and headers</h2>
 <p>
 Same raw data as the previous sample, now with headers.
@@ -143,8 +145,8 @@ Unless stated otherwise, all the chart functions
 (<code>bar()</code>, <code>column()</code>, <code>line()</code> and <code>area()</code>)
 support same parameters.
 </p>
-<pre id="bar1c_source"></pre>
-<script type="text/python" id="bar1c_sample">
+<pre></pre>
+<script type="text/python">
 from charts.css import bar
 chart = bar(
     [
@@ -172,12 +174,13 @@ from browser import document
 document["bar1c_output"].html = chart
 </script>
 <div id="bar1c_output">Loading......</div>
-<script>document.getElementById("bar1c_source").innerHTML = document.getElementById("bar1c_sample").innerHTML</script>
+</section>
 
+<section class="sample">
 <h2>Column chart with multiple datasets</h2>
 Multiple datasets mean there are multiple columns from your 2-dimension list input.
-<pre id="column_source"></pre>
-<script type="text/python" id="column_sample">
+<pre></pre>
+<script type="text/python">
 from charts.css import (
     column,
     LegendCircle, LegendEllipse, LegendSquare, LegendRectangle, LegendRhombus, LegendLine)
@@ -205,13 +208,14 @@ from browser import document
 document["column_output"].html = chart
 </script>
 <div id="column_output">Loading......</div>
-<script>document.getElementById("column_source").innerHTML = document.getElementById("column_sample").innerHTML</script>
+</section>
 
+<section class="sample">
 <h2>Column chart, stacked by face value</h2>
 <code>bar()</code> and <code>column()</code> support a boolean parameter <code>stacked</code>.
 Simply enable that, you will get a stacked bar chart (or column chart).
-<pre id="column_stacked_source"></pre>
-<script type="text/python" id="column_stacked_sample">
+<pre></pre>
+<script type="text/python">
 from charts.css import (
     column,
     LegendCircle, LegendEllipse, LegendSquare, LegendRectangle, LegendRhombus, LegendLine)
@@ -239,12 +243,13 @@ from browser import document
 document["column_stacked_output"].html = chart
 </script>
 <div id="column_stacked_output">Loading......</div>
-<script>document.getElementById("column_stacked_source").innerHTML = document.getElementById("column_stacked_sample").innerHTML</script>
+</section>
 
+<section class="sample">
 <h2>Column chart, stacked by percentage</h2>
 A <code>percentage=True</code> can switch stacked column or bar chart to percentage view.
-<pre id="column_stacked_percentage_source"></pre>
-<script type="text/python" id="column_stacked_percentage_sample">
+<pre></pre>
+<script type="text/python">
 from charts.css import (
     column,
     LegendCircle, LegendEllipse, LegendSquare, LegendRectangle, LegendRhombus, LegendLine)
@@ -273,14 +278,15 @@ from browser import document
 document["column_stacked_percentage_output"].html = chart
 </script>
 <div id="column_stacked_percentage_output">Loading......</div>
-<script>document.getElementById("column_stacked_percentage_source").innerHTML = document.getElementById("column_stacked_percentage_sample").innerHTML</script>
+</section>
 
+<section class="sample">
 <h2>Line chart</h2>
 Line charts display raw data connected with a straight line.
 The input is still a 2-dimension list.
 Note that each vertical "column" - rather than the horizontal "row" - is rendered as a horizontal line.
-<pre id="line_source"></pre>
-<script type="text/python" id="line_sample">
+<pre></pre>
+<script type="text/python">
 from charts.css import line, LegendRectangle
 chart = line(
     [
@@ -301,12 +307,13 @@ from browser import document
 document["line_output"].html = chart
 </script>
 <div id="line_output">Loading......</div>
-<script>document.getElementById("line_source").innerHTML = document.getElementById("line_sample").innerHTML</script>
+</section>
 
+<section class="sample">
 <h2>Area</h2>
 Area charts work similar to line charts, plus they display raw data with colors between axis and line.
-<pre id="area_source"></pre>
-<script type="text/python" id="area_sample">
+<pre></pre>
+<script type="text/python">
 from charts.css import area, LegendRhombus
 chart = area(
     [
@@ -327,10 +334,17 @@ from browser import document
 document["area_output"].html = chart
 </script>
 <div id="area_output">Loading......</div>
-<script>document.getElementById("area_source").innerHTML = document.getElementById("area_sample").innerHTML</script>
+</section>
+
+<script>
+document.querySelectorAll("section.sample").forEach(section=>{
+  section.querySelector("pre").innerHTML = section.querySelector("script").innerHTML;
+});
+</script>
 
     <script src="https://cdn.jsdelivr.net/npm/brython@3/brython.min.js"></script>
     <script src="https://github.com/rayluo/charts.css.py/releases/download/0.3.0/charts.css.py-brython.js"></script>
+
   </body>
 </html>
 
