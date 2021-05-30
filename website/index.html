@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Charts.css.py Online Document</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/charts.css/dist/charts.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tocbot/4.11.1/tocbot.css">
     <style>
     .charts-css {  /* You have to use this class name */
       height: 400px;  /* Most charts need some height to operate */
@@ -19,6 +20,10 @@
       align-items: end;
     }
     */
+    body {
+      width: 70%;
+      margin: 0 auto;
+    }
     pre {
       margin-left: 2em;
       background-color: #eee;
@@ -26,13 +31,26 @@
     code {
       background-color: #eee;
     }
+    .js-toc {
+      position: fixed !important;
+      height: 100%;
+      width: 10%;
+      right: calc(((100% - 70%) / 2 - 10%) / 2);  /* Formula:
+        ((Full Width - Body Width) / 2 - TOC Width) / 2 */
+      z-index: 1;
+    }
+    .js-toc li {
+      list-style: none;
+    }
     </style>
   </head>
   <body id="body" onload="brython()" class="container">
 
-<h1>Charts.css.py Online Document</h1>
+<nav class="js-toc"></nav>
 
-<h2>Introduction</h2>
+<h1 id="title">Charts.css.py Online Document</h1>
+
+<h2 id="introduction">Introduction</h2>
 <p>
 As implied by its name, <code>charts.css.py</code> brings <code>charts.css</code> to Python.
 </p>
@@ -50,7 +68,7 @@ which will be rendered by <code>charts.css</code>.
 </p>
 
 <section class="sample">
-<h2>Bar chart with single dataset</h2>
+<h2 id="single_dataset">Bar chart with single dataset</h2>
 Let's start this document with a simple sample.
 Our first sample shows the basic usage pattern, visualizing single dataset with default effect.
 You still need to organize your single dataset as a 2-dimension list.
@@ -81,7 +99,7 @@ document["bar1r_output"].html = chart
 <div id="bar1r_output">Loading......</div>
 </section>
 
-<h2>Installation</h2>
+<h2 id="installation">Installation</h2>
 If you are working on a normal Python project, you can install by <code>pip</code>:
 <pre>pip install charts.css.py</pre>
 If your project is powered by Brython, you can choose to use our JS package.
@@ -91,7 +109,7 @@ If your project is powered by Brython, you can choose to use our JS package.
 &lt;script src="https://github.com/rayluo/charts.css.py/releases/download/0.3.0/charts.css.py-brython.js"&gt;&lt;/script&gt;
 </pre>
 
-<h2>Configuration</h2>
+<h2 id="configuration">Configuration</h2>
 First of all, insert this snippet into your html page,
 typically inside the &lt;head&gt;...&lt;/head&gt; tag:
 <pre>
@@ -108,7 +126,7 @@ typically inside the &lt;head&gt;...&lt;/head&gt; tag:
 &lt;/style&gt;
 </pre>
 
-<h2>Data Format</h2>
+<h2 id="data_format">Data Format</h2>
 All chart functions in <code>charts.css.py</code> have a unified data format as a 2-dimension list,
 optionally with headers in the first column and/or first row. They look like this:
 <pre>
@@ -134,7 +152,7 @@ data = [
 </pre>
 
 <section class="sample">
-<h2>Bar chart with single dataset and headers</h2>
+<h2 id="single_dataset_and_headers">Bar chart with single dataset and headers</h2>
 <p>
 Same raw data as the previous sample, now with headers.
 The headers in first column are visible in chart, but headers in first row are not.
@@ -177,7 +195,7 @@ document["bar1c_output"].html = chart
 </section>
 
 <section class="sample">
-<h2>Column chart with multiple datasets</h2>
+<h2 id="multiple_datasets">Column chart with multiple datasets</h2>
 Multiple datasets mean there are multiple columns from your 2-dimension list input.
 <pre></pre>
 <script type="text/python">
@@ -211,7 +229,7 @@ document["column_output"].html = chart
 </section>
 
 <section class="sample">
-<h2>Column chart, stacked by face value</h2>
+<h2 id="stacked_by_value">Column chart, stacked by face value</h2>
 <code>bar()</code> and <code>column()</code> support a boolean parameter <code>stacked</code>.
 Simply enable that, you will get a stacked bar chart (or column chart).
 <pre></pre>
@@ -246,7 +264,7 @@ document["column_stacked_output"].html = chart
 </section>
 
 <section class="sample">
-<h2>Column chart, stacked by percentage</h2>
+<h2 id="stacked_by_percentage">Column chart, stacked by percentage</h2>
 A <code>percentage=True</code> can switch stacked column or bar chart to percentage view.
 <pre></pre>
 <script type="text/python">
@@ -281,7 +299,7 @@ document["column_stacked_percentage_output"].html = chart
 </section>
 
 <section class="sample">
-<h2>Line chart</h2>
+<h2 id="line_chart">Line chart</h2>
 Line charts display raw data connected with a straight line.
 The input is still a 2-dimension list.
 Note that each vertical "column" - rather than the horizontal "row" - is rendered as a horizontal line.
@@ -310,7 +328,7 @@ document["line_output"].html = chart
 </section>
 
 <section class="sample">
-<h2>Area</h2>
+<h2 id="area_chart">Area</h2>
 Area charts work similar to line charts, plus they display raw data with colors between axis and line.
 <pre></pre>
 <script type="text/python">
@@ -335,6 +353,22 @@ document["area_output"].html = chart
 </script>
 <div id="area_output">Loading......</div>
 </section>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tocbot/4.11.1/tocbot.min.js"></script>
+<script>
+tocbot.init({
+  // Where to render the table of contents.
+  tocSelector: '.js-toc',
+  // Where to grab the headings to build the table of contents.
+  contentSelector: "body",
+  // Which headings to grab inside of the contentSelector element.
+  headingSelector: 'h1, h2',
+  // For headings inside relative or absolute positioned containers within content.
+  hasInnerContainers: false,  // true,
+  headingsOffset: 40,
+  scrollSmoothOffset: -40
+});
+</script>
 
 <script>
 document.querySelectorAll("section.sample").forEach(section=>{
