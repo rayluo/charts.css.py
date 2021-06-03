@@ -354,6 +354,40 @@ document["area_output"].html = chart
 <div id="area_output">Loading......</div>
 </section>
 
+<section class="sample">
+<h2 id="read_csv">Reading from .csv file</h2>
+Our input data format is a 2-dimension list,
+so it is easy to consume data from a .csv source file,
+such as <a href="sample.csv">this one</a>.
+Just remember that the output from Python's built-in <code>csv.reader</code>
+contains all strings, so you need to perform string-to-numeric-value conversion.
+<pre></pre>
+<script type="text/python">
+import csv
+from charts.css import line, LegendRectangle
+def str_to_value(s):
+    try:
+        return float(s)  # Convert string to numberic value
+    except:
+        return s  # It is expected to be table headers
+with open("sample.csv") as f:
+    sample_data = [list(map(str_to_value, row)) for row in csv.reader(f)]
+chart = line(
+    sample_data,
+    headers_in_first_row=True,
+    headers_in_first_column=True,
+    legend=LegendRectangle,  # Legend is meaningful when you have multiple datasets with headers
+    legend_inline=True,
+    heading="Investment Portfolio",
+    )
+# Now, variable chart contains html snippet of "< table >...< /table >",
+# which you can somehow insert into the proper place of your html page.
+from browser import document
+document["csv_output"].html = chart
+</script>
+<div id="csv_output">Loading......</div>
+</section>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/tocbot/4.11.1/tocbot.min.js"></script>
 <script>
 tocbot.init({
@@ -377,6 +411,7 @@ document.querySelectorAll("section.sample").forEach(section=>{
 </script>
 
     <script src="https://cdn.jsdelivr.net/npm/brython@3/brython.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/brython@3/brython_stdlib.min.js"></script>
     <script src="https://github.com/rayluo/charts.css.py/releases/download/0.3.0/charts.css.py-brython.js"></script>
 
   </body>
