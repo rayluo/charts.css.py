@@ -364,13 +364,13 @@ chart = column(
     headers_in_first_column=True,
     hide_data=True,
     show_data_on_hover=True,
-    data_spacing=20,
-    datasets_spacing=4,
+    data_spacing=20,  # The space between bar(s)/column(s) with different labels. Valid values are 0 to 20.
+    datasets_spacing=4,  # The space between bars/columns within same label. Valid values are 0 to 20.
     heading="Charts.css.py global sales volume",
     legend=LegendCircle,  # Legend is meaningful when you have multiple numeric columns with headers
     legend_inline=True,  # Optional
     value_displayer="${}K".format,  # More convenient than a lambda value: "${}K".format(value)
-    show_secondary_axes=10,
+    show_secondary_axes=10,  # Valid values are 0 to 10.
     )
 # Now, variable chart contains html snippet of "< table >...< /table >",
 # which you can somehow insert into the proper place of your html page.
