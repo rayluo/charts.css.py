@@ -1,5 +1,6 @@
 from charts.css import (
     bar, column, line, area, wrapper,
+    transpose,
     LegendRectangle, LegendSquare)
 
 
@@ -601,3 +602,14 @@ table.column tr:nth-child(odd) {
 </div>
 """)
 
+def test_transpose():
+    matrix = [
+        (1, 2, 3),
+        (4, 5, 6),
+        ]
+    assert transpose(matrix) == [
+        (1, 4),
+        (2, 5),
+        (3, 6),
+        ]
+    assert transpose(transpose(matrix)) == matrix

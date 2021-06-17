@@ -4,6 +4,17 @@
 __version__ = "0.3.0"
 
 
+def transpose(matrix):
+    """Transpose the incoming matrix and return a new one.
+
+    The incoming matrix will remain intact.
+
+    As an implementation detail, the output would be a list of *tuples*.
+    Regardless, the output would also be accepted by all chart functions.
+    """
+    return list(zip(*matrix))
+
+
 class Legend:  # https://chartscss.org/components/legend/
     _shape = ""
     def __init__(self, legends: list, inline=None):
