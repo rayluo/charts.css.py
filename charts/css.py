@@ -63,6 +63,7 @@ def _chart(
     stacked=False,  # Only applicable to bar and column charts. https://chartscss.org/components/stacked/
 
     heading: str = None,
+    hide_label=None,
     hide_data=False,
     show_data_on_hover=False,
     reverse=False,  # https://chartscss.org/components/orientation/#reverse-orientation
@@ -94,6 +95,10 @@ def _chart(
         Such data structure can be the outcome from ``csv.reader`` or ``csv.DictReader``
         of the `standard Python csv module <https://docs.python.org/3/library/csv.html>`_.
         So you can easily read raw data from a csv and feed it into this function.
+
+    :param callable hide_label:
+        It should be None or have a shape of lambda row_number, heading: bool(...)
+        which will be used to determined whether a label should be hidden.
     """
     assert rows
     if not (rows and len(rows) > (1 if headers_in_first_row else 0)):
@@ -165,7 +170,11 @@ def _chart(
             ) if _series_upper_bound else global_upper_bound
 
         cells = [(
-            """      <th scope="row">{}</th>""".format(cell["value"])
+            """      <th scope="row"{classes}>{value}</th>""".format(
+                value=cell["value"],
+                classes=' class="hide-label"'
+                    if hide_label and hide_label(y, cell["value"]) else "",
+            )
             if x == 0 and headers_in_first_column else
             """      <td style="{start}--size:calc({value}/{denominator});">
         <span class="data">{data}</span> {tooltip}
