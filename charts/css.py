@@ -80,6 +80,8 @@ def _chart(
     data_spacing=None,
     datasets_spacing=None,
 
+    tooltip_builder=None,
+
     # More customizing can be done by regular css: https://chartscss.org/components/wrapper/#customizing-the-chart
     # and https://chartscss.org/customization/
 ) -> str:
@@ -178,7 +180,7 @@ def _chart(
             if x == 0 and headers_in_first_column else
             """      <td style="{start}--size:calc({value}/{denominator});">
         <span class="data">{data}</span> {tooltip}
-      </td>""".format(
+      </td>""".format(  # https://chartscss.org/components/tooltips/#best-practice
                 start="--start:calc({value}/{denominator});".format(
                     value=previous_row[x]["value"] if previous_row else cell["value"],
                     denominator=denominator,
@@ -186,9 +188,7 @@ def _chart(
                 value=cell["value"],
                 denominator=denominator,
                 data=cell.get("data", value_displayer(cell["value"])),
-                tooltip='<span class="tooltip">{}</span>'.format(
-                    # https://chartscss.org/components/tooltips/#best-practice
-                    cell["tooltip"]) if "tooltip" in cell else "",
+                tooltip=_get_tooltip(cell, x, y, row, tooltip_builder),
                 )
             ) for x, cell in enumerate(row)]
         table_rows.append("    <tr>\n{}\n    </tr>".format("\n".join(cells)))
@@ -217,6 +217,22 @@ def _chart(
         table=table,
         legend=legend(rows[0][first_data_row:], inline=legend_inline),
         ) if legend and headers_in_first_row else table
+
+def _get_tooltip(cell, column_number, row_number, row, tooltip_builder):
+    assert isinstance(cell, dict), "cell should have been normalized into a dict"
+    template = '<span class="tooltip">{}</span>'
+    if "tooltip" in cell:  # When the cell dict contains native tooltip, use it
+        return template.format(cell["tooltip"])
+    if tooltip_builder:
+        return template.format(tooltip_builder(
+            value=cell["value"],
+            label=row[0]["value"],
+            column_number=column_number,
+            row_number=row_number,
+            row=row,
+            ))
+    return ""
+
 
 def bar(rows, *, stacked=False, percentage=False, **kwargs) -> str:
     return _chart(
