@@ -73,7 +73,7 @@ def _chart(
     reverse_datasets=False,
 
     #show_primary_axis=False,
-    #show_data_axis=False,
+    show_data_axes=False,
     show_secondary_axes=None,
 
     # https://chartscss.org/components/spacing/
@@ -124,7 +124,8 @@ def _chart(
         "show-data-on-hover" if show_data_on_hover else None,
         "reverse" if reverse else None,
         "show-primary-axis",  # Hardcoded for now. That axis looks good.
-        "show-data-axes",  # Hardcoded for now. That axes look good.
+        "show-data-axes" if show_data_axes else None,  # Note:
+            # Do not use it on charts with hundreds of rows. It would mask the chart.
         "show-{}-secondary-axes".format(show_secondary_axes) if show_secondary_axes else None,
         "data-spacing-{}".format(data_spacing) if data_spacing else None,
         "datasets-spacing-{}".format(datasets_spacing) if datasets_spacing else None,
