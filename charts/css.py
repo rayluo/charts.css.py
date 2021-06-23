@@ -59,7 +59,8 @@ def _chart(
 
     _series_upper_bound=None,  # In the shape of lambda a_list: a_value
         # https://chartscss.org/components/stacked/#simple-vs-percentage
-    value_displayer=lambda value: value,
+    value_displayer=None,
+    value_converter=None,
     stacked=False,  # Only applicable to bar and column charts. https://chartscss.org/components/stacked/
 
     heading: str = None,
@@ -134,6 +135,9 @@ def _chart(
         "stacked" if stacked else None,
         ]))
 
+    def as_is(raw):
+        return raw
+
     def cell2dict(raw):
         return raw if isinstance(raw, dict) else {"value": raw}
     normalized_rows = [list(  # Normalize each cell into a dict, for easier post-process.
@@ -141,17 +145,20 @@ def _chart(
         ) for row in rows]
     padding = 0.2 if _type == "line" else 0  # TODO: How to choose a value fitting the current datasets?
 
-    def numeric_values_in_a_row(row):
+    def numeric_values_in_a_row(row, value_converter=value_converter, as_is=as_is):
         _data_starts_at_row = (
             # Brython 3.7 and 3.8 do not support merging this ternary into next line
             1 if headers_in_first_column else 0)
-        values = [cell["value"] for cell in row[_data_starts_at_row:]]
+        values = [
+            (value_converter or as_is)(cell["value"])
+            for cell in row[_data_starts_at_row:]]
         if not values:
             raise ValueError("Inputed rows should contain at least one numeric column")
         for v in values:
             if not isinstance(v, (int, float)):
                 raise ValueError(
                     "Cell ({}) needs to be either a numeric value, "
+                    "or converted to a numeric value by value_converter, "
                     "or declared as a row/column header.".format(repr(v)))
         return values
 
@@ -188,7 +195,7 @@ def _chart(
                     ) if _type in ("line", "area") else "",
                 value=cell["value"],
                 denominator=denominator,
-                data=cell.get("data", value_displayer(cell["value"])),
+                data=cell.get("data", (value_displayer or as_is)(cell["value"])),
                 tooltip=_get_tooltip(cell, x, y, row, tooltip_builder),
                 )
             ) for x, cell in enumerate(row)]
