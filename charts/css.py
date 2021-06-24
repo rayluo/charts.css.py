@@ -59,7 +59,8 @@ def _chart(
 
     _series_upper_bound=None,  # In the shape of lambda a_list: a_value
         # https://chartscss.org/components/stacked/#simple-vs-percentage
-    value_displayer=lambda value: value,
+    value_displayer=None,
+    value_converter=None,
     stacked=False,  # Only applicable to bar and column charts. https://chartscss.org/components/stacked/
 
     heading: str = None,
@@ -73,12 +74,14 @@ def _chart(
     reverse_datasets=False,
 
     #show_primary_axis=False,
-    #show_data_axis=False,
+    show_data_axes=False,
     show_secondary_axes=None,
 
     # https://chartscss.org/components/spacing/
     data_spacing=None,
     datasets_spacing=None,
+
+    tooltip_builder=None,
 
     # More customizing can be done by regular css: https://chartscss.org/components/wrapper/#customizing-the-chart
     # and https://chartscss.org/customization/
@@ -122,7 +125,8 @@ def _chart(
         "show-data-on-hover" if show_data_on_hover else None,
         "reverse" if reverse else None,
         "show-primary-axis",  # Hardcoded for now. That axis looks good.
-        "show-data-axes",  # Hardcoded for now. That axes look good.
+        "show-data-axes" if show_data_axes else None,  # Note:
+            # Do not use it on charts with hundreds of rows. It would mask the chart.
         "show-{}-secondary-axes".format(show_secondary_axes) if show_secondary_axes else None,
         "data-spacing-{}".format(data_spacing) if data_spacing else None,
         "datasets-spacing-{}".format(datasets_spacing) if datasets_spacing else None,
@@ -131,6 +135,9 @@ def _chart(
         "stacked" if stacked else None,
         ]))
 
+    def as_is(raw):
+        return raw
+
     def cell2dict(raw):
         return raw if isinstance(raw, dict) else {"value": raw}
     normalized_rows = [list(  # Normalize each cell into a dict, for easier post-process.
@@ -138,17 +145,20 @@ def _chart(
         ) for row in rows]
     padding = 0.2 if _type == "line" else 0  # TODO: How to choose a value fitting the current datasets?
 
-    def numeric_values_in_a_row(row):
+    def numeric_values_in_a_row(row, value_converter=value_converter, as_is=as_is):
         _data_starts_at_row = (
             # Brython 3.7 and 3.8 do not support merging this ternary into next line
             1 if headers_in_first_column else 0)
-        values = [cell["value"] for cell in row[_data_starts_at_row:]]
+        values = [
+            (value_converter or as_is)(cell["value"])
+            for cell in row[_data_starts_at_row:]]
         if not values:
             raise ValueError("Inputed rows should contain at least one numeric column")
         for v in values:
             if not isinstance(v, (int, float)):
                 raise ValueError(
                     "Cell ({}) needs to be either a numeric value, "
+                    "or converted to a numeric value by value_converter, "
                     "or declared as a row/column header.".format(repr(v)))
         return values
 
@@ -178,17 +188,15 @@ def _chart(
             if x == 0 and headers_in_first_column else
             """      <td style="{start}--size:calc({value}/{denominator});">
         <span class="data">{data}</span> {tooltip}
-      </td>""".format(
+      </td>""".format(  # https://chartscss.org/components/tooltips/#best-practice
                 start="--start:calc({value}/{denominator});".format(
                     value=previous_row[x]["value"] if previous_row else cell["value"],
                     denominator=denominator,
                     ) if _type in ("line", "area") else "",
                 value=cell["value"],
                 denominator=denominator,
-                data=cell.get("data", value_displayer(cell["value"])),
-                tooltip='<span class="tooltip">{}</span>'.format(
-                    # https://chartscss.org/components/tooltips/#best-practice
-                    cell["tooltip"]) if "tooltip" in cell else "",
+                data=cell.get("data", (value_displayer or as_is)(cell["value"])),
+                tooltip=_get_tooltip(cell, x, y, row, tooltip_builder),
                 )
             ) for x, cell in enumerate(row)]
         table_rows.append("    <tr>\n{}\n    </tr>".format("\n".join(cells)))
@@ -217,6 +225,22 @@ def _chart(
         table=table,
         legend=legend(rows[0][first_data_row:], inline=legend_inline),
         ) if legend and headers_in_first_row else table
+
+def _get_tooltip(cell, column_number, row_number, row, tooltip_builder):
+    assert isinstance(cell, dict), "cell should have been normalized into a dict"
+    template = '<span class="tooltip">{}</span>'
+    if "tooltip" in cell:  # When the cell dict contains native tooltip, use it
+        return template.format(cell["tooltip"])
+    if tooltip_builder:
+        return template.format(tooltip_builder(
+            value=cell["value"],
+            label=row[0]["value"],
+            column_number=column_number,
+            row_number=row_number,
+            row=row,
+            ))
+    return ""
+
 
 def bar(rows, *, stacked=False, percentage=False, **kwargs) -> str:
     return _chart(
