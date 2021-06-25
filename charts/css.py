@@ -1,7 +1,7 @@
 ## Avoid `typing` due to its significant overhead in some Python implementation
 #from typing import Optional, Callable, List
 
-__version__ = "0.3.0"
+__version__ = "0.4.0"
 
 
 def transpose(matrix):
