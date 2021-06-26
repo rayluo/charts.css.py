@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Charts.css.py Online Document</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/charts.css/dist/charts.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tocbot/4.11.1/tocbot.css">
+    <style>
+    .charts-css {  /* You have to use this class name */
+      height: 400px;  /* Most charts need some height to operate */
+      width: 80%;  /* Optional */
+      margin: 1em auto;  /* Optional */
+    }
+    .charts-css.legend.legend-inline {  /* You have to use this class name */
+      height: 3em;  /* Optional */
+    }
+    /* TBD
+    .line th {
+      align-items: end;
+    }
+    */
+    body {
+      width: 70%;
+      margin: 0 auto;
+    }
+    pre {
+      margin-left: 2em;
+      background-color: #eee;
+    }
+    code {
+      background-color: #eee;
+    }
+    .js-toc {
+      position: fixed !important;
+      height: 100%;
+      width: 10%;
+      right: calc(((100% - 70%) / 2 - 10%) / 2);  /* Formula:
+        ((Full Width - Body Width) / 2 - TOC Width) / 2 */
+      z-index: 1;
+    }
+    .js-toc li {
+      list-style: none; /* To remove the numbers and bullet dots */
+      margin: 0.5em; /* Since we removed bullet points, we need a larger-than-one height to differentiate sections */
+    }
+    </style>
+  </head>
+  <body id="body" onload="brython()" class="container">
+
+<nav class="js-toc"></nav>
+
+<h1 id="title">Charts.css.py Online Document</h1>
+
+<h2 id="introduction">Introduction</h2>
+<a target=_blank href="https://github.com/rayluo/charts.css.py">Project <code>charts.css.py</code></a>
+provides a python API to convert your 2-dimension data lists into html snippet,
+which will be rendered into charts when serving inside a browser.
+
+Characteristic:
+<ul>
+<li>
+Once the html snippet is delivered into the browser window, the rendering is done by CSS,
+which is typically
+<a href="https://chartscss.org/docs/#alternatives" target=_blank>faster than JS-heavy chart libraries</a>.
+</li>
+<li>
+The output of <code>charts.css.py</code> is a normal HTML table.
+Search engines and screen readers will be able to consume your data even when CSS rendering is unavailable.
+</li>
+<li>Since the output is normal HTML, you could further customize its size and position.</li>
+</ul>
+<code>charts.css.py</code> is built on top of its upstream project
+<a href="https://chartscss.org/" target=_blank>Charts.css</a>.
+
+<section class="sample">
+<h2 id="single_dataset">Hello World</h2>
+Let's start this document with a simple sample.
+Our first sample shows the basic usage pattern, visualizing single dataset with default effect.
+You still need to organize your single dataset as a 2-dimension list.
+<pre></pre>
+<script type="text/python">
+from charts.css import bar
+chart = bar(
+    [
+        [1],
+        [2],
+        [4],
+        [6],
+        [8],
+        [10],
+    ],
+    )
+# Note:
+#   The following one-row approach generates a seemingly similar chart.
+#   We will describe their subtle differences in subsequent samples.
+# chart = bar([[1, 2, 4, 6, 8, 10]])
+#
+# Now, variable chart contains html snippet of "< table >...< /table >",
+# which you can somehow insert into the proper place of your html page.
+# Consider the following 2 lines as pseudo-code.
+from browser import document
+document["bar1r_output"].html = chart
+</script>
+<div id="bar1r_output">Loading......</div>
+</section>
+
+<h2 id="installation">Installation</h2>
+If you are working on a normal Python project, you can install by <code>pip</code>:
+<pre>pip install charts.css.py</pre>
+If your project is powered by Brython, you can choose to use our JS package.
+(The version number below might not be up-to-date. Please get latest version from
+<a href="https://github.com/rayluo/charts.css.py/releases" target=_blank>Release page</a>.)
+<pre>
+&lt;script src="https://github.com/rayluo/charts.css.py/releases/download/0.3.0/charts.css.py-brython.js"&gt;&lt;/script&gt;
+</pre>
+
+<h2 id="configuration">Configuration</h2>
+First of all, insert this snippet into your html page,
+typically inside the &lt;head&gt;...&lt;/head&gt; tag:
+<pre>
+&lt;link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/charts.css/dist/charts.min.css"&gt;
+&lt;style&gt;
+.charts-css {  /* You have to use this class name */
+  height: 400px;  /* Most charts need some height to operate */
+  width: 80%;  /* Optional */
+  margin: 1em auto;  /* Optional */
+}
+.charts-css.legend.legend-inline {  /* You have to use this class name */
+  height: 3em;  /* Optional */
+}
+&lt;/style&gt;
+</pre>
+
+<h2 id="data_format">Data Format</h2>
+All chart functions in <code>charts.css.py</code> have a unified data format as a 2-dimension list,
+optionally with headers in the first column and/or first row. They look like this:
+<pre>
+data = [
+    ["Continent", "1st year", "2nd year", "3rd year", "4th year", "5th year"],
+    ["Asia", 20.0, 30.0, 40.0, 50.0, 75.0],
+    ["Euro", 40.0, 60.0, 75.0, 90.0, 100.0],
+    ]
+</pre>
+Even when you are working with one-dimension data,
+you would still need to format them as 2-dimension list, which contains one column:
+<pre>
+data = [
+    [20.0],
+    [40.0],
+    ]
+</pre>
+Some charts can also work with one row:
+<pre>
+data = [
+    [20.0, 30.0, 40.0, 50.0, 75.0],
+    ]
+</pre>
+
+<h2 id="crash_course">Crash Course</h2>
+<section class="sample">
+<h3 id="2d_data">2-dimension data</h3>
+All chart functions in <code>charts.css.py</code> have a unified data format as a 2-dimension list,
+optionally with headers in the first column and/or first row.
+The following sample has a 2-dimension list which contains real 2-dimension numeric data,
+and then renders them as 4 different kind of charts.
+<pre></pre>
+<script type="text/python">
+from charts.css import (bar, column, line, area,
+    LegendCircle, LegendEllipse, LegendSquare, LegendRectangle, LegendRhombus, LegendLine)
+data = [
+    ["Date", "AAPL", "MSFT", "ORCL", "QCOM", "CSCO"],
+    ["Jan 1", 150.0, 140.0, 200.0, 50.0, 175.0],
+    ["Feb 1", 110.0, 260.0, 75.0, 90.0, 100.0],
+    ["Mar 1", 125.43, 245.17, 79.03, 151.46, 52.43],
+]
+
+bar_chart = bar(
+    data,
+    legend=LegendRectangle,  # Legend is meaningful when you have multiple numeric columns with headers
+    data_spacing=10,  # Looks better when having multiple numeric columns
+    headers_in_first_row=True, headers_in_first_column=True, legend_inline=True)
+column_chart = column(
+    data,
+    legend=LegendSquare,  # Legend is meaningful when you have multiple numeric columns with headers
+    data_spacing=10,  # Looks better when having multiple numeric columns
+    headers_in_first_row=True, headers_in_first_column=True, legend_inline=True)
+line_chart = line(
+    data,
+    legend=LegendLine,  # Legend is meaningful when you have multiple numeric columns with headers
+    headers_in_first_row=True, headers_in_first_column=True, legend_inline=True)
+area_chart = area(
+    data,
+    legend=LegendRhombus,  # Legend is meaningful when you have multiple numeric columns with headers
+    headers_in_first_row=True, headers_in_first_column=True, legend_inline=True)
+
+# Now, each variable xyz_chart contains html snippet of "< table >...< /table >",
+# which you can somehow insert into the proper place in your html page.
+# Consider the following snippet as pseudo-code.
+from browser import document
+document["data_format_bar"].html = bar_chart
+document["data_format_column"].html = column_chart
+document["data_format_line"].html = line_chart
+document["data_format_area"].html = area_chart
+</script>
+Here come the different charts generated by the snippet above.
+Get yourself familiar with their common characteristics:
+<ol>
+<li>
+  When the input contains 2 or more columns of numeric data,
+  each column is treated as one dataset and rendered in one color.
+</li>
+<li>Column headers (which are in the first data row) will show up as legends.</li>
+<li>Row headers (which are in the first data column) will show up as labels along the chart's primary axis.</li>
+</ol>
+In a bar chart, the labels in primary axis also runs downward, same as their order in the raw data.
+<div id="data_format_bar">Loading......</div>
+Think a column chart as a bar chart being rotated 90 degrees counterclockwise.
+<div id="data_format_column">Loading......</div>
+In a line chart, each numeric column in the 2-dimension raw data will be rendered as a line.
+<div id="data_format_line">Loading......</div>
+Area chart is line chart being filled with color between each line and the primary axis.
+Generally, we would not want to use area chart when handling multiple numeric columns.
+<div id="data_format_area">Loading......</div>
+</section>
+
+<section class="sample">
+<h3 id="1d_horizontal">1-dimension horizontal</h3>
+<p>Sometimes you are dealing with 1-dimension numeric data.
+You will have 2 options to organize your data:
+pack them as either a 1 horizontal row or 1 vertical column into the 2-dimension list.
+</p>
+<p>This sample is showing the outcome of 1 horizontal row.</p>
+<pre></pre>
+<script type="text/python">
+from charts.css import (bar, column, line, area,
+    LegendCircle, LegendEllipse, LegendSquare, LegendRectangle, LegendRhombus, LegendLine)
+data = [
+    ["Date", "AAPL", "MSFT", "ORCL", "QCOM", "CSCO"],
+    ["Jan 1", 150.0, 140.0, 200.0, 50.0, 175.0],
+]
+bar_chart = bar(
+    data,
+    legend=LegendRectangle,  # Legend is meaningful when you have multiple numeric columns with headers
+    headers_in_first_row=True, headers_in_first_column=True, legend_inline=True)
+column_chart = column(
+    data,
+    legend=LegendSquare,  # Legend is meaningful when you have multiple numeric columns with headers
+    headers_in_first_row=True, headers_in_first_column=True, legend_inline=True)
+line_chart = line(
+    data,
+    legend=LegendLine,  # Legend is meaningful when you have multiple numeric columns with headers
+    headers_in_first_row=True, headers_in_first_column=True, legend_inline=True)
+area_chart = area(
+    data,
+    legend=LegendRhombus,  # Legend is meaningful when you have multiple numeric columns with headers
+    headers_in_first_row=True, headers_in_first_column=True, legend_inline=True)
+# Now, each variable xyz_chart contains html snippet of "< table >...< /table >",
+# which you can somehow insert into the proper place in your html page.
+# Consider the following snippet as pseudo-code.
+from browser import document
+document["data_format_bar_h"].html = bar_chart
+document["data_format_column_h"].html = column_chart
+document["data_format_line_h"].html = line_chart
+document["data_format_area_h"].html = area_chart
+</script>
+In such a one-dimension horizontal numeric data scenario,
+bar chart will look similar to the previous bar chart.
+It is just that its primary axis contains only one data point, and righfully so.
+<div id="data_format_bar_h">Loading......</div>
+Column chart also looks as a rotated bar chart, and still looks good.
+<div id="data_format_column_h">Loading......</div>
+Line chart has no enough data points to show lines.
+So you probably won't want to create a line chart this way.
+<div id="data_format_line_h">Loading......</div>
+Area chart generated by multiple numeric columns is still not recommended.
+<div id="data_format_area_h">Loading......</div>
+</section>
+
+<section class="sample">
+<h3 id="1d_vertical">1-dimension vertical</h3>
+When your 2-dimension list contains only 1 vertical column of numeric data,
+<code>charts.css.py</code> will treat it as one dataset with multiple data points.
+<pre></pre>
+<script type="text/python">
+from charts.css import (bar, column, line, area,
+    LegendCircle, LegendEllipse, LegendSquare, LegendRectangle, LegendRhombus, LegendLine)
+data = [
+    ["Date", "AAPL"],
+    ["Jan 1", 150.0],
+    ["Feb 1", 110.0],
+    ["Mar 1", 125.43],
+]
+bar_chart = bar(
+    data,
+    heading="Apple Stock Price",
+    legend=LegendRectangle,  # Legend is meaningful when you have multiple numeric columns with headers
+    headers_in_first_row=True, headers_in_first_column=True, legend_inline=True)
+column_chart = column(
+    data,
+    heading="Apple Stock Price",
+    headers_in_first_row=True, headers_in_first_column=True)
+line_chart = line(
+    data,
+    heading="Apple Stock Price",
+    legend=LegendLine,  # Legend is meaningful when you have multiple numeric columns with headers
+    headers_in_first_row=True, headers_in_first_column=True, legend_inline=True)
+area_chart = area(
+    data,
+    heading="Apple Stock Price",
+    legend=LegendRectangle,  # Legend is meaningful when you have multiple numeric columns with headers
+    headers_in_first_row=True, headers_in_first_column=True, legend_inline=True)
+# Now, each variable xyz_chart contains html snippet of "< table >...< /table >",
+# which you can somehow insert into the proper place in your html page.
+# Consider the following snippet as pseudo-code.
+from browser import document
+document["data_format_bar_v"].html = bar_chart
+document["data_format_column_v"].html = column_chart
+document["data_format_line_v"].html = line_chart
+document["data_format_area_v"].html = area_chart
+</script>
+Bar chart will be rendered differently:
+<ul>
+<li>
+  Since there is only one column but there are many rows,
+  the colors will be applied on the rows rather than columns.
+</li>
+<li>
+  There is only one column to be shown as legend,
+  and its legend color does not mean anything, and is even misleading.
+  We still demonstrate a legend in this sample,
+  but the better approach is to use heading instead of legend here.
+</li>
+</ul>
+<div id="data_format_bar_v">Loading......</div>
+The column chart still looks like a rotated bar chart.
+Here we choose to show its heading rather than its legend.
+<div id="data_format_column_v">Loading......</div>
+There will be enough enough data points to draw one line.
+And the color of its legend is also correct, although not really meaningful.
+<div id="data_format_line_v">Loading......</div>
+The "1 vertical column of numeric data" is probably the only case that an area chart would look nice.
+<div id="data_format_area_v">Loading......</div>
+</section>
+
+<section class="sample">
+<h2 id="customization">Customization</h2>
+This sample shows how to customize:
+value representation, value appearance, whether shown when hover, secondary axes, spacing, ...
+Most of these options are applicable to all chart types.
+<pre></pre>
+<script type="text/python">
+from charts.css import (
+    column,
+    LegendCircle, LegendEllipse, LegendSquare, LegendRectangle, LegendRhombus, LegendLine)
+chart = column(
+    [
+        ["Continent", "1st year", "2nd year", "3rd year", "4th year", "5th year"],
+        ["Asia", 20, 30, 40, 50, 75],
+        ["Euro", 40, 60, 75, 90, 100],
+        ["America", 50, 50, 30, 20, 25],
+        ["Africa", 20, 20, 20, 20, 20],
+    ],
+    headers_in_first_row=True,
+    headers_in_first_column=True,
+    hide_data=True,
+    show_data_on_hover=True,
+    data_spacing=20,  # The space between bar(s)/column(s) with different labels. Valid values are 0 to 20.
+    datasets_spacing=4,  # The space between bars/columns within same label. Valid values are 0 to 20.
+    heading="Charts.css.py global sales volume",
+    legend=LegendCircle,  # Legend is meaningful when you have multiple numeric columns with headers
+    legend_inline=True,  # Optional
+    value_displayer="${}K".format,  # More convenient than a lambda value: "${}K".format(value)
+    show_secondary_axes=10,  # Valid values are 0 to 10.
+    )
+# Now, variable chart contains html snippet of "< table >...< /table >",
+# which you can somehow insert into the proper place of your html page.
+# Consider the following 2 lines as pseudo-code.
+from browser import document
+document["column_output"].html = chart
+</script>
+<div id="column_output">Loading......</div>
+</section>
+
+<h2 id="stacked">Stacked charts</h2>
+<section class="sample">
+<h3 id="stacked_by_value">Stacked by value</h3>
+<code>bar()</code> and <code>column()</code> support a boolean parameter <code>stacked</code>.
+Simply enable that, you will get a stacked bar chart (or column chart).
+<pre></pre>
+<script type="text/python">
+from charts.css import column, LegendSquare
+chart = column(
+    [
+        ["Continent", "1st year", "2nd year", "3rd year", "4th year", "5th year"],
+        ["Asia", 20.0, 30.0, 40.0, 50.0, 75.0],
+        ["Euro", 40.0, 60.0, 75.0, 90.0, 100.0],
+        ["America", 50, 50, 30, 20, 25],
+        ["Africa", 20, 20, 20, 20, 20],
+    ],
+    stacked=True,  # <-- This generates the stacked chart
+    headers_in_first_row=True,
+    headers_in_first_column=True,
+    data_spacing=20,
+    heading="Charts.css.py global sales volume",
+    legend=LegendSquare,  # Legend is meaningful when you have multiple numeric columns with headers
+    legend_inline=True,  # Optional
+    value_displayer="${}K".format,  # More convenient than a lambda
+    )
+# Now, variable chart contains html snippet of "< table >...< /table >",
+# which you can somehow insert into the proper place of your html page.
+# Consider the following 2 lines as pseudo-code.
+from browser import document
+document["column_stacked_output"].html = chart
+</script>
+<div id="column_stacked_output">Loading......</div>
+</section>
+
+<section class="sample">
+<h3 id="stacked_by_percentage">Stacked by percentage</h3>
+A <code>percentage=True</code> can switch stacked column or bar chart to percentage view.
+<pre></pre>
+<script type="text/python">
+from charts.css import column, LegendSquare
+chart = column(
+    [
+        ["Continent", "1st year", "2nd year", "3rd year", "4th year", "5th year"],
+        ["Asia", 20.0, 30.0, 40.0, 50.0, 75.0],
+        ["Euro", 40.0, 60.0, 75.0, 90.0, 100.0],
+        ["America", 50, 50, 30, 20, 25],
+        ["Africa", 20, 20, 20, 20, 20],
+    ],
+    stacked=True,  # <-- This generates the stacked chart
+    percentage=True,  # <-- This stacks each cell by its percentage in its numeric column
+    headers_in_first_row=True,
+    headers_in_first_column=True,
+    data_spacing=20,
+    heading="Charts.css.py global sales volume",
+    legend=LegendSquare,  # Legend is meaningful when you have multiple numeric columns with headers
+    legend_inline=True,  # Optional
+    value_displayer="${}K".format,  # More convenient than a lambda
+    )
+# Now, variable chart contains html snippet of "< table >...< /table >",
+# which you can somehow insert into the proper place of your html page.
+# Consider the following 2 lines as pseudo-code.
+from browser import document
+document["column_stacked_percentage_output"].html = chart
+</script>
+<div id="column_stacked_percentage_output">Loading......</div>
+</section>
+
+<section class="sample">
+<h2 id="read_csv">Reading from .csv file</h2>
+Our input data format is a 2-dimension list,
+so it is easy to consume data from a .csv source file,
+such as <a href="sample.csv">this one</a>.
+Just remember that the output from Python's built-in <code>csv.reader</code>
+contains all strings, so you need to perform string-to-numeric-value conversion.
+<pre></pre>
+<script type="text/python">
+import csv
+from charts.css import line, LegendLine
+def str_to_value(s):
+    try:
+        return float(s)  # Convert string to numeric value
+    except:
+        return s  # It is expected to be table headers
+with open("sample.csv") as f:
+    sample_data = [list(map(str_to_value, row)) for row in csv.reader(f)]
+chart = line(
+    sample_data,
+    headers_in_first_row=True,
+    headers_in_first_column=True,
+    legend=LegendLine,  # Legend is meaningful when you have multiple numeric columns with headers
+    legend_inline=True,
+    heading="Investment Portfolio",
+    )
+# Now, variable chart contains html snippet of "< table >...< /table >",
+# which you can somehow insert into the proper place of your html page.
+from browser import document
+document["csv_output"].html = chart
+</script>
+<div id="csv_output">Loading......</div>
+</section>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tocbot/4.11.1/tocbot.min.js"></script>
+<script>
+tocbot.init({
+  // Where to render the table of contents.
+  tocSelector: '.js-toc',
+  // Where to grab the headings to build the table of contents.
+  contentSelector: "body",
+  // Which headings to grab inside of the contentSelector element.
+  headingSelector: 'h2, h3',
+  // For headings inside relative or absolute positioned containers within content.
+  hasInnerContainers: false,  // true,
+  headingsOffset: 40,
+  scrollSmoothOffset: -40
+});
+</script>
+
+<script>
+document.querySelectorAll("section.sample").forEach(section=>{
+  section.querySelector("pre").innerHTML = section.querySelector("script").innerHTML;
+});
+</script>
+
+    <script src="https://cdn.jsdelivr.net/npm/brython@3/brython.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/brython@3/brython_stdlib.min.js"></script>
+    <script src="https://github.com/rayluo/charts.css.py/releases/download/0.3.0/charts.css.py-brython.js"></script>
+
+  </body>
+</html>
+

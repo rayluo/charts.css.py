@@ -1,5 +1,6 @@
 from charts.css import (
     bar, column, line, area, wrapper,
+    transpose,
     LegendRectangle, LegendSquare)
 
 
@@ -19,7 +20,7 @@ def test_single_dataset_in_one_column_without_header():
         value_displayer="${}K".format,
         heading=heading,
         )
-    assert minify(chart) == minify("""<table class='charts-css column show-labels show-heading show-primary-axis show-data-axes'>
+    assert minify(chart) == minify("""<table class='charts-css column show-labels show-heading show-primary-axis'>
   <caption>{}</caption>
 
   <tbody>
@@ -68,7 +69,7 @@ def test_single_dataset_with_col_and_row_headers():
         heading=heading,
         )
     assert minify(chart) == minify("""
-<table class='charts-css bar show-labels show-heading show-primary-axis show-data-axes'>
+<table class='charts-css bar show-labels show-heading show-primary-axis'>
   <caption>{}</caption>
   <thead>
     <tr>
@@ -127,7 +128,7 @@ def test_multi_datasets_with_auto_legend():
         datasets_spacing=4,
         )
     assert minify(chart) == minify("""
-<table class='charts-css column show-labels show-heading show-primary-axis show-data-axes data-spacing-20 datasets-spacing-4 multiple'>
+<table class='charts-css column show-labels show-heading show-primary-axis data-spacing-20 datasets-spacing-4 multiple'>
   <caption>This mimics this sample https://chartscss.org/components/datasets/#datasets-colors</caption>
   <thead>
     <tr>
@@ -200,7 +201,7 @@ def test_multi_datasets_line_chart_handles_start_value():
         show_secondary_axes=4,
         )
     assert minify(chart) == minify("""
-<table class='charts-css line show-labels show-heading show-primary-axis show-data-axes show-4-secondary-axes multiple'>
+<table class='charts-css line show-labels show-heading show-primary-axis show-4-secondary-axes multiple'>
   <caption>This mimics this sample https://chartscss.org/components/datasets/#datasets-colors</caption>
   <thead>
     <tr>
@@ -269,7 +270,7 @@ def test_multi_datasets_stacked_by_value():
         data_spacing=5,
         )
     assert minify(chart) == minify("""
-<table class='charts-css bar show-labels show-heading hide-data show-primary-axis show-data-axes show-5-secondary-axes data-spacing-5 stacked multiple'>
+<table class='charts-css bar show-labels show-heading hide-data show-primary-axis show-5-secondary-axes data-spacing-5 stacked multiple'>
   <caption>{}</caption>
   <thead>
     <tr>
@@ -448,7 +449,7 @@ table.column tr:nth-child(odd) {
 }
 </style>
 <div id="my_chart">
-<table class='charts-css area show-labels hide-data show-primary-axis show-data-axes'>
+<table class='charts-css area show-labels hide-data show-primary-axis'>
 
 
   <tbody>
@@ -480,7 +481,7 @@ table.column tr:nth-child(odd) {
   </tbody>
 </table>
 
-<table class='charts-css line show-labels hide-data show-primary-axis show-data-axes'>
+<table class='charts-css line show-labels hide-data show-primary-axis'>
 
 
   <tbody>
@@ -512,7 +513,7 @@ table.column tr:nth-child(odd) {
   </tbody>
 </table>
 
-<table class='charts-css column show-labels hide-data show-primary-axis show-data-axes data-spacing-2'>
+<table class='charts-css column show-labels hide-data show-primary-axis data-spacing-2'>
 
 
   <tbody>
@@ -601,3 +602,14 @@ table.column tr:nth-child(odd) {
 </div>
 """)
 
+def test_transpose():
+    matrix = [
+        (1, 2, 3),
+        (4, 5, 6),
+        ]
+    assert transpose(matrix) == [
+        (1, 4),
+        (2, 5),
+        (3, 6),
+        ]
+    assert transpose(transpose(matrix)) == matrix
