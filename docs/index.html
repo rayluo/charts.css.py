@@ -108,10 +108,11 @@ document["bar1r_output"].html = chart
 If you are working on a normal Python project, you can install by <code>pip</code>:
 <pre>pip install charts.css.py</pre>
 If your project is powered by Brython, you can choose to use our JS package.
-(The version number below might not be up-to-date. Please get latest version from
-<a href="https://github.com/rayluo/charts.css.py/releases" target=_blank>Release page</a>.)
-<pre>
-&lt;script src="https://github.com/rayluo/charts.css.py/releases/download/0.3.0/charts.css.py-brython.js"&gt;&lt;/script&gt;
+For example, this online document is using this javascript file, hosted in our Github
+<a href="https://github.com/rayluo/charts.css.py/releases" target=_blank>Release page</a>:
+<pre id="release_url">
+<!-- Note to self: This content will be dynamically rendered to show src of "js_distribution" -->
+&lt;script src="https://github.com/rayluo/charts.css.py/releases/download/x.y.z/charts.css.py-brython.js"&gt;&lt;/script&gt;
 </pre>
 
 <h2 id="configuration">Configuration</h2>
@@ -506,7 +507,12 @@ document.querySelectorAll("section.sample").forEach(section=>{
 
     <script src="https://cdn.jsdelivr.net/npm/brython@3/brython.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/brython@3/brython_stdlib.min.js"></script>
-    <script src="https://github.com/rayluo/charts.css.py/releases/download/0.3.0/charts.css.py-brython.js"></script>
+    <script id="js_distribution" src="https://github.com/rayluo/charts.css.py/releases/download/0.4.0/charts.css.py-brython.js"></script>
+<script>document.getElementById("release_url").innerHTML = (
+  '&lt;script src="'
+  + document.getElementById("js_distribution").src
+  + '"&gt;&lt;/script&gt');
+</script>
 
   </body>
 </html>
