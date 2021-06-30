@@ -496,26 +496,30 @@ document["column_stacked_percentage_output"].html = chart
 Our input data format is a 2-dimension list,
 so it is easy to consume data from a .csv source file,
 such as <a href="sample.csv">this one</a>.
-Just remember that the output from Python's built-in <code>csv.reader</code>
-contains all strings, so you need to perform string-to-numeric-value conversion.
+
+In fact, if you ever wonder why <code>charts.css.py</code>'s line chart and area chart
+are designed to consume a <a href="#1d_vertical">"1-dimension vertical" matrix</a>
+rather than a <a href="#1d_horizontal">"1-dimension horizontal" matrix</a>,
+it is roughly because the tall-and-thin, vertically-scrolling layout is more prevalent in CSV.
 <pre></pre>
 <script type="text/python">
 import csv
 from charts.css import line, LegendLine
-def str_to_value(s):
-    try:
-        return float(s)  # Convert string to numeric value
-    except:
-        return s  # It is expected to be table headers
+
 with open("sample.csv") as f:
-    sample_data = [list(map(str_to_value, row)) for row in csv.reader(f)]
+    data = list(csv.reader(f))  # Easily get a 2-dimension list from csv reader
+
 chart = line(
-    sample_data,
+    data,
+    value_converter=float,  # Raw values in csv are all strings. Convert them to int or float
     headers_in_first_row=True,
     headers_in_first_column=True,
-    legend=LegendLine,  # Legend is meaningful when you have multiple numeric columns with headers
-    legend_inline=True,
-    heading="Investment Portfolio",
+    heading="Gold Prices",
+
+    # Data from .csv tend to contain lots of rows, here let's keep the chart clean
+    hide_label=lambda row_number, header: bool(row_number % 10),  # Hide most labels
+    hide_data=True,  # Otherwise it would be messy
+    tooltip_builder="<b>${value}</b> <i>at {label}</i>".format,  # template can contain html tags, too
     )
 # Now, variable chart contains html snippet of "< table >...< /table >",
 # which you can somehow insert into the proper place of your html page.
