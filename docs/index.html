@@ -108,10 +108,11 @@ document["bar1r_output"].html = chart
 If you are working on a normal Python project, you can install by <code>pip</code>:
 <pre>pip install charts.css.py</pre>
 If your project is powered by Brython, you can choose to use our JS package.
-(The version number below might not be up-to-date. Please get latest version from
-<a href="https://github.com/rayluo/charts.css.py/releases" target=_blank>Release page</a>.)
-<pre>
-&lt;script src="https://github.com/rayluo/charts.css.py/releases/download/0.3.0/charts.css.py-brython.js"&gt;&lt;/script&gt;
+For example, this online document is using this javascript file, hosted in our Github
+<a href="https://github.com/rayluo/charts.css.py/releases" target=_blank>Release page</a>:
+<pre id="release_url">
+<!-- Note to self: This content will be dynamically rendered to show src of "js_distribution" -->
+&lt;script src="https://github.com/rayluo/charts.css.py/releases/download/x.y.z/charts.css.py-brython.js"&gt;&lt;/script&gt;
 </pre>
 
 <h2 id="configuration">Configuration</h2>
@@ -343,6 +344,48 @@ The "1 vertical column of numeric data" is probably the only case that an area c
 </section>
 
 <section class="sample">
+<h3 id="transpose">Transpose</h3>
+<p>
+The above 2 sections tell us that the 2-dimension data would be rendered differently,
+based on which dimension is organized as a row or as a column.
+Sometimes our raw data is already in one shape,
+but we may want to "flip" their row and column, i.e. "flip" their x-axis and y-axis,
+for them to be rendered to a chart that we want.
+How do we achieve that?
+</p>
+<p>
+We got you covered.
+That "flipping x-axis and y-axis" is also known as "to transpose a matrix" in math.
+So, <code>charts.css.py</code> provides a <code>transpose(...)</code>.
+In particular, the following sample shows
+how to convert a "horizontally wide and vertically short" list of numeric data
+into a "horizontally narrow but vertically long" 2-dimension list,
+and render them as line chart.
+<pre></pre>
+<script type="text/python">
+from charts.css import line, transpose
+raw_data_as_a_one_dimension_flat_list = [150, 140, 200, 50, 175]
+transposed_matrix = transpose([raw_data_as_a_one_dimension_flat_list])
+assert transposed_matrix == [  # This check is for illustrative purpose. You can skip it.
+    # FWIW, the transposed matrix contains a list of tuples, not a list of lists.
+    # But that does not matter. All chart functions would happily accept such a matrix.
+    (150,),
+    (140,),
+    (200,),
+    (50,),
+    (175,),
+    ]
+line_chart = line(transposed_matrix)
+# Now, each variable xyz_chart contains html snippet of "< table >...< /table >",
+# which you can somehow insert into the proper place in your html page.
+# Consider the following snippet as pseudo-code.
+from browser import document
+document["transpose_chart"].html = line_chart
+</script>
+<div id="transpose_chart">Loading......</div>
+</section>
+
+<section class="sample">
 <h2 id="customization">Customization</h2>
 This sample shows how to customize:
 value representation, value appearance, whether shown when hover, secondary axes, spacing, ...
@@ -453,26 +496,30 @@ document["column_stacked_percentage_output"].html = chart
 Our input data format is a 2-dimension list,
 so it is easy to consume data from a .csv source file,
 such as <a href="sample.csv">this one</a>.
-Just remember that the output from Python's built-in <code>csv.reader</code>
-contains all strings, so you need to perform string-to-numeric-value conversion.
+
+In fact, if you ever wonder why <code>charts.css.py</code>'s line chart and area chart
+are designed to consume a <a href="#1d_vertical">"1-dimension vertical" matrix</a>
+rather than a <a href="#1d_horizontal">"1-dimension horizontal" matrix</a>,
+it is roughly because the tall-and-thin, vertically-scrolling layout is more prevalent in CSV.
 <pre></pre>
 <script type="text/python">
 import csv
 from charts.css import line, LegendLine
-def str_to_value(s):
-    try:
-        return float(s)  # Convert string to numeric value
-    except:
-        return s  # It is expected to be table headers
+
 with open("sample.csv") as f:
-    sample_data = [list(map(str_to_value, row)) for row in csv.reader(f)]
+    data = list(csv.reader(f))  # Easily get a 2-dimension list from csv reader
+
 chart = line(
-    sample_data,
+    data,
+    value_converter=float,  # Raw values in csv are all strings. Convert them to int or float
     headers_in_first_row=True,
     headers_in_first_column=True,
-    legend=LegendLine,  # Legend is meaningful when you have multiple numeric columns with headers
-    legend_inline=True,
-    heading="Investment Portfolio",
+    heading="Gold Prices",
+
+    # Data from .csv tend to contain lots of rows, here let's keep the chart clean
+    hide_label=lambda row_number, header: bool(row_number % 10),  # Hide most labels
+    hide_data=True,  # Otherwise it would be messy
+    tooltip_builder="<b>${value}</b> <i>at {label}</i>".format,  # template can contain html tags, too
     )
 # Now, variable chart contains html snippet of "< table >...< /table >",
 # which you can somehow insert into the proper place of your html page.
@@ -506,7 +553,12 @@ document.querySelectorAll("section.sample").forEach(section=>{
 
     <script src="https://cdn.jsdelivr.net/npm/brython@3/brython.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/brython@3/brython_stdlib.min.js"></script>
-    <script src="https://github.com/rayluo/charts.css.py/releases/download/0.3.0/charts.css.py-brython.js"></script>
+    <script id="js_distribution" src="https://github.com/rayluo/charts.css.py/releases/download/0.4.0/charts.css.py-brython.js"></script>
+<script>document.getElementById("release_url").innerHTML = (
+  '&lt;script src="'
+  + document.getElementById("js_distribution").src
+  + '"&gt;&lt;/script&gt');
+</script>
 
   </body>
 </html>
