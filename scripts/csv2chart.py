@@ -6,12 +6,6 @@ from charts.css import *
 from charts.css import __version__
 
 
-def _cell_2_float(cell):
-    try:
-        return float(cell)
-    except:
-        return cell
-
 def main():
     supported_charts = {
         "bar": bar,
@@ -38,7 +32,8 @@ def main():
         'infile', nargs='?', type=argparse.FileType('r'), default=sys.stdin,
         help="The filename of the CSV file. Default to STDIN.")
     parser.add_argument(
-        'outfile', nargs='?', type=argparse.FileType('w'), default=sys.stdout)
+        'outfile', nargs='?', type=argparse.FileType('w'), default=sys.stdout,
+        help="The filename of the output file. Default to STDOUT.")
     parser.add_argument(
         '--chart', nargs='?', default="column", choices=supported_charts.keys(),
         help="Chart type")
@@ -61,10 +56,15 @@ def main():
         nargs='?', type=int, default=0, choices=DATASETS_SPACING)
     parser.add_argument('--value_displayer', default="{}",
         help="A string template containing a pair of curly brackets, e.g. '${}K'")
+    parser.add_argument('--value_converter', default="int",
+        help="""Convert values in CSV file into numbers for calculation purpose.
+The actual visual output remains the same as raw CSV cells.
+Valid inputs are: int, float""")
 
     args = parser.parse_args()
     args.outfile.write(STYLESHEET + wrapper(supported_charts[args.chart](
-        [list(map(_cell_2_float, row)) for row in csv.reader(args.infile)],
+        list(csv.reader(args.infile)),
+        value_converter=int if args.value_converter == "int" else float,
         headers_in_first_row=args.headers_in_first_row,
         headers_in_first_column=args.headers_in_first_column,
         legend=legends.get(args.legend),
