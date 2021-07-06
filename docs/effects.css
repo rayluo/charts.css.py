@@ -1,0 +1,54 @@
+/*
+Derived from https://chartscss.org/customization/3d-effects/
+Usage:
+<table class="charts-css column capsule ...">...</table>
+*/
+
+.capsule.charts-css.column tbody td,
+.capsule.charts-css.bar tbody td {
+    border-radius: 10px;
+    box-shadow:
+    inset -5px -5px 10px rgba(0, 0, 0, 0.5),
+    5px 5px 5px rgba(0, 0, 0, 0.5);
+}
+
+.round.charts-css.column tbody td,
+.round.charts-css.bar tbody td {
+    border-radius: 10px;
+}
+
+.stick.charts-css.column tbody td,
+.stick.charts-css.bar tbody td {
+  box-shadow:
+    1px -1px 1px lightgrey,
+    2px -2px 1px lightgrey,
+    3px -3px 1px lightgrey,
+    4px -4px 1px lightgrey,
+    5px -5px 1px lightgrey,
+    6px -6px 1px lightgrey,
+    7px -7px 1px lightgrey,
+    8px -8px 1px lightgrey,
+    9px -9px 1px lightgrey,
+    10px -10px 1px lightgrey;
+}
+
+table.tilt.charts-css {
+  transform: skewY(20deg);
+  margin-top: 15%;
+  margin-bottom: 15%;
+}
+
+/* Mixed charts by css positioning. Inspired by https://chartscss.org/charts/mixed/#using-css-position */
+.wrapper {
+  position: relative;
+  height: 400px;  /* Most charts need some height to operate */
+  width: 80%;  /* Optional */
+  margin: 1em auto;  /* Optional */
+}
+.wrapper .charts-css {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}

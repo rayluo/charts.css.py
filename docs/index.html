@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Charts.css.py Online Document</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/charts.css/dist/charts.min.css">
+    <link rel="stylesheet" href="effects.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tocbot/4.11.1/tocbot.css">
     <style>
     .charts-css {  /* You have to use this class name */
@@ -432,16 +433,14 @@ The sample below is stacked by percentage.
 </section>
 
 <section class="sample">
-<h2 id="customization">Customization</h2>
+<h2 id="options">Options</h2>
 We have demonstrated some options so far. There are more.
 This sample shows how to customize:
 value representation, value appearance, whether shown when hover, secondary axes, spacing, ...
 Most of these options are applicable to all chart types.
 <pre></pre>
 <script type="text/python">
-from charts.css import (
-    column,
-    LegendCircle, LegendEllipse, LegendSquare, LegendRectangle, LegendRhombus, LegendLine)
+from charts.css import column, LegendCircle
 chart = column(
     [
         ["Continent", "1st year", "2nd year", "3rd year", "4th year", "5th year"],
@@ -472,15 +471,136 @@ document["column_output"].html = chart
 </section>
 
 <section class="sample">
+<h2 id="customization">Customization</h2>
+<p>
+One of the characteristic of <code>Charts.css.py</code> is the ability to
+<i>customize the visibility using basic CSS</i>.
+Frontend developers can target any HTML element and customize it.
+This section gives some samples for demo purpose.
+</p>
+<p>
+For example, <a href="effects.css">this sample css file</a>
+defines style classes. Some of them can be used combined.
+Just include it by <code>&lt;link rel="stylesheet" href="effects.css"&gt;</code>
+and then uses parameter <code>classes</code> to reference the style class name(s).
+</p>
+<p>
+Most styles defined in this sample are only applicable to column chart and bar chart.
+</p>
+<p>New in version 0.5.0.</p>
+<pre></pre>
+<script type="text/python">
+from charts.css import column, LegendCircle
+
+# Same data and options as before
+data = [
+    ["Continent", "1st year", "2nd year", "3rd year", "4th year", "5th year"],
+    ["Asia", 20, 30, 40, 50, 75],
+    ["Euro", 40, 60, 75, 90, 100],
+    ["America", 50, 50, 30, 20, 25],
+    ["Africa", 20, 20, 20, 20, 20],
+    ]
+options = dict(
+    heading="Charts.css.py global sales volume",
+    headers_in_first_row=True,
+    headers_in_first_column=True,
+    hide_data=True,
+    show_data_on_hover=True,
+    data_spacing=20,  # The space between bar(s)/column(s) with different labels. Valid values are 0 to 20.
+    datasets_spacing=6,  # The space between bars/columns within same label. Valid values are 0 to 20.
+    legend=LegendCircle,  # Legend is meaningful when you have multiple numeric columns with headers
+    legend_inline=True,  # Optional
+    value_displayer="${}K".format,  # More convenient than a lambda value: "${}K".format(value)
+    show_secondary_axes=10,  # Valid values are 0 to 10.
+    )
+
+# Demonstrate how to use the new classes parameter
+capsule_chart = column(data, classes=["capsule"], **options)
+stick_chart = column(data, classes=["stick"], **options)
+
+# Depends on the css style definition, you may mix and match the classes.
+round_stick_chart = column(data, classes=["round", "stick"], **options)
+tilted_stick_chart = column(data, classes=["tilt", "round", "stick"], **options)
+
+# Now, variable chart contains html snippet of "< table >...< /table >",
+# which you can somehow insert into the proper place of your html page.
+# Consider the following lines as pseudo-code.
+from browser import document
+document["capsule_output"].html = capsule_chart
+document["stick_output"].html = stick_chart
+document["round_stick_output"].html = round_stick_chart
+document["tilted_stick_output"].html = tilted_stick_chart
+</script>
+The chart below is my favorite. I call it the capsule effect. :-)
+<div id="capsule_output">Loading...</div>
+The next one looks like wood stick.
+<div id="stick_output">Loading...</div>
+The next one looks like wood stick, with round corners.
+<div id="round_stick_output">Loading...</div>
+The next one has tilt effect. The columns look like popsicle sticks. :-p
+<div id="tilted_stick_output">Loading...</div>
+</section>
+
+<section class="sample">
+<h2 id="mixed">Mixed Charts</h2>
+Mixed charts display a combination of two or more different chart types on top of each other.
+<pre></pre>
+<script type="text/python">
+from charts.css import line, area
+chart1 = area(
+    [
+        ["Continent", "1st year"],
+        ["Asia", 20],
+        ["Euro", 40],
+        ["America", 50],
+        ["Africa", 20],
+    ],
+    headers_in_first_row=True,
+    headers_in_first_column=True,
+    hide_data=True,
+    show_data_on_hover=True,
+    heading="Charts.css.py global sales volume",
+    value_displayer="${}K".format,  # More convenient than a lambda value: "${}K".format(value)
+    )
+chart2 = line(
+    [
+        ["Continent", "2nd year", "3rd year", "4th year", "5th year"],
+        ["Asia", 30, 40, 50, 75],
+        ["Euro", 60, 75, 90, 100],
+        ["America", 50, 30, 20, 25],
+        ["Africa", 20, 20, 20, 20],
+    ],
+    headers_in_first_row=True,
+    headers_in_first_column=True,
+    hide_data=True,
+    show_data_on_hover=True,
+    heading="Charts.css.py global sales volume",
+    value_displayer="${}K".format,  # More convenient than a lambda value: "${}K".format(value)
+    )
+# Now, variable chart contains html snippet of "< table >...< /table >",
+# which you can somehow insert into the proper place of your html page.
+# Consider the following 2 lines as pseudo-code.
+from browser import document
+document["mixed_output"].html = chart1 + chart2
+</script>
+<div id="mixed_output" class="wrapper">Loading......</div>
+<style>#mixed_output .area {--color: blue; --color: linear-gradient(#000, #fff);}</style>
+</section>
+
+<section class="sample">
 <h2 id="read_csv">Reading from .csv file</h2>
+<p>
 Our input data format is a 2-dimension list,
 so it is easy to consume data from a .csv source file,
 such as <a href="sample.csv">this one</a>.
-
+</p>
+<p>
 In fact, if you ever wonder why <code>charts.css.py</code>'s line chart and area chart
 are designed to consume a <a href="#1d_vertical">"1-dimension vertical" matrix</a>
 rather than a <a href="#1d_horizontal">"1-dimension horizontal" matrix</a>,
 it is roughly because the tall-and-thin, vertically-scrolling layout is more prevalent in CSV.
+</p>
+<p>New in version 0.4.0: <code>value_converter</code></p>
 <pre></pre>
 <script type="text/python">
 import csv
@@ -533,7 +653,10 @@ document.querySelectorAll("section.sample").forEach(section=>{
 
     <script src="https://cdn.jsdelivr.net/npm/brython@3/brython.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/brython@3/brython_stdlib.min.js"></script>
+    <!--
     <script id="js_distribution" src="https://github.com/rayluo/charts.css.py/releases/download/0.4.0/charts.css.py-brython.js"></script>
+    -->
+    <script id="js_distribution" src="site-packages.brython.js"></script>
 <script>document.getElementById("release_url").innerHTML = (
   '&lt;script src="'
   + document.getElementById("js_distribution").src
