@@ -386,7 +386,54 @@ document["transpose_chart"].html = line_chart
 </section>
 
 <section class="sample">
+<h2 id="stacked">Stacked charts</h2>
+<code>bar()</code> and <code>column()</code> support a boolean parameter <code>stacked</code>.
+Simply enable that, you will get a stacked bar chart (or column chart).
+A <code>percentage=True</code> can switch stacked column or bar chart to percentage view.
+<pre></pre>
+<script type="text/python">
+from charts.css import column, LegendSquare
+data = [
+    ["Continent", "1st year", "2nd year", "3rd year", "4th year", "5th year"],
+    ["Asia", 20.0, 30.0, 40.0, 50.0, 75.0],
+    ["Euro", 40.0, 60.0, 75.0, 90.0, 100.0],
+    ["America", 50, 50, 30, 20, 25],
+    ["Africa", 20, 20, 20, 20, 20],
+    ]
+shared_options = dict(  # These options will be shared by the follow 2 samples
+    headers_in_first_row=True,
+    headers_in_first_column=True,
+    data_spacing=20,
+    heading="Charts.css.py global sales volume",
+    legend=LegendSquare,  # Legend is meaningful when you have multiple numeric columns with headers
+    legend_inline=True,  # Optional
+    value_displayer="${}K".format,  # More convenient than a lambda
+    )
+chart_stacked_by_value = column(
+    data,
+    stacked=True,  # <-- This generates the stacked chart
+    **shared_options)
+chart_stacked_by_percentage = column(
+    data,
+    stacked=True,  # <-- This generates the stacked chart
+    percentage=True,  # <-- This stacks each cell by its percentage in its numeric column
+    **shared_options)
+# Now, variable chart contains html snippet of "< table >...< /table >",
+# which you can somehow insert into the proper place of your html page.
+# Consider the following lines as pseudo-code.
+from browser import document
+document["column_stacked_output"].html = chart_stacked_by_value
+document["column_stacked_percentage_output"].html = chart_stacked_by_percentage
+</script>
+The sample below is stacked by value.
+<div id="column_stacked_output">Loading......</div>
+The sample below is stacked by percentage.
+<div id="column_stacked_percentage_output">Loading......</div>
+</section>
+
+<section class="sample">
 <h2 id="customization">Customization</h2>
+We have demonstrated some options so far. There are more.
 This sample shows how to customize:
 value representation, value appearance, whether shown when hover, secondary axes, spacing, ...
 Most of these options are applicable to all chart types.
@@ -422,73 +469,6 @@ from browser import document
 document["column_output"].html = chart
 </script>
 <div id="column_output">Loading......</div>
-</section>
-
-<h2 id="stacked">Stacked charts</h2>
-<section class="sample">
-<h3 id="stacked_by_value">Stacked by value</h3>
-<code>bar()</code> and <code>column()</code> support a boolean parameter <code>stacked</code>.
-Simply enable that, you will get a stacked bar chart (or column chart).
-<pre></pre>
-<script type="text/python">
-from charts.css import column, LegendSquare
-chart = column(
-    [
-        ["Continent", "1st year", "2nd year", "3rd year", "4th year", "5th year"],
-        ["Asia", 20.0, 30.0, 40.0, 50.0, 75.0],
-        ["Euro", 40.0, 60.0, 75.0, 90.0, 100.0],
-        ["America", 50, 50, 30, 20, 25],
-        ["Africa", 20, 20, 20, 20, 20],
-    ],
-    stacked=True,  # <-- This generates the stacked chart
-    headers_in_first_row=True,
-    headers_in_first_column=True,
-    data_spacing=20,
-    heading="Charts.css.py global sales volume",
-    legend=LegendSquare,  # Legend is meaningful when you have multiple numeric columns with headers
-    legend_inline=True,  # Optional
-    value_displayer="${}K".format,  # More convenient than a lambda
-    )
-# Now, variable chart contains html snippet of "< table >...< /table >",
-# which you can somehow insert into the proper place of your html page.
-# Consider the following 2 lines as pseudo-code.
-from browser import document
-document["column_stacked_output"].html = chart
-</script>
-<div id="column_stacked_output">Loading......</div>
-</section>
-
-<section class="sample">
-<h3 id="stacked_by_percentage">Stacked by percentage</h3>
-A <code>percentage=True</code> can switch stacked column or bar chart to percentage view.
-<pre></pre>
-<script type="text/python">
-from charts.css import column, LegendSquare
-chart = column(
-    [
-        ["Continent", "1st year", "2nd year", "3rd year", "4th year", "5th year"],
-        ["Asia", 20.0, 30.0, 40.0, 50.0, 75.0],
-        ["Euro", 40.0, 60.0, 75.0, 90.0, 100.0],
-        ["America", 50, 50, 30, 20, 25],
-        ["Africa", 20, 20, 20, 20, 20],
-    ],
-    stacked=True,  # <-- This generates the stacked chart
-    percentage=True,  # <-- This stacks each cell by its percentage in its numeric column
-    headers_in_first_row=True,
-    headers_in_first_column=True,
-    data_spacing=20,
-    heading="Charts.css.py global sales volume",
-    legend=LegendSquare,  # Legend is meaningful when you have multiple numeric columns with headers
-    legend_inline=True,  # Optional
-    value_displayer="${}K".format,  # More convenient than a lambda
-    )
-# Now, variable chart contains html snippet of "< table >...< /table >",
-# which you can somehow insert into the proper place of your html page.
-# Consider the following 2 lines as pseudo-code.
-from browser import document
-document["column_stacked_percentage_output"].html = chart
-</script>
-<div id="column_stacked_percentage_output">Loading......</div>
 </section>
 
 <section class="sample">
