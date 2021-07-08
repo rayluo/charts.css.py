@@ -83,6 +83,7 @@ def _chart(
 
     tooltip_builder=None,
 
+    classes=None,
     # More customizing can be done by regular css: https://chartscss.org/components/wrapper/#customizing-the-chart
     # and https://chartscss.org/customization/
 ) -> str:
@@ -133,7 +134,7 @@ def _chart(
         "reverse-data" if reverse_data else None,
         "reverse-datasets" if reverse_datasets else None,
         "stacked" if stacked else None,
-        ]))
+        ] + (classes or [])))  # Also allow caller to specify classes
 
     def as_is(raw):
         return raw
